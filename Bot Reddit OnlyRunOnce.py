@@ -31,7 +31,6 @@ cacheFile = '/tmp/botcommentscache' #which is the file i need to save already do
 fileOpened = False   #flag to check if cache files are already opened, I need to do something better
 
 
-
 """
  _____ _   _ _   _  ____ _____ ___ ___  _   _ ____  
 |  ___| | | | \ | |/ ___|_   _|_ _/ _ \| \ | / ___| 
@@ -137,7 +136,7 @@ def similarSearch(appName):
 
 def exitBot():  #function to exit the bot, will be used when logging will be implemented
 	sys.exit()
-	
+
 """
  __  __    _    ___ _   _ 
 |  \/  |  / \  |_ _| \ | |
@@ -152,6 +151,7 @@ def exitBot():  #function to exit the bot, will be used when logging will be imp
 
 """
 
+
 if(os.path.isfile('theBotIsRunning')):   #if the bot is already running
 	print("The bot is already running, shutting down")
 	exitBot()
@@ -162,12 +162,11 @@ open('theBotIsRunning', 'w').close()  #create the file that tell the bot is runn
 
 try:
 	with open ("login.txt", "r") as loginFile:     #reading login info from a file, it should be username (newline) password
-   		loginInfo = loginFile.readlines()
+		loginInfo = loginFile.readlines()
+	loginInfo[0] = loginInfo[0].replace('\n', '')
+	loginInfo[1] = loginInfo[1].replace('\n', '')
 
-   	loginInfo[0] = loginInfo[0].replace('\n', '')
-   	loginInfo[1] = loginInfo[1].replace('\n', '')
-
-   	r = praw.Reddit('/u/PlayStoreLinks_Bot by /u/cris9696')
+	r = praw.Reddit('/u/PlayStoreLinks_Bot by /u/cris9696')
 	r.login(loginInfo[0], loginInfo[1])
 	subreddit = r.get_subreddit('cris9696+AndroidGaming+AndroidQuestions+Android+AndroidUsers+twitaaa+AndroidApps+AndroidThemes+harley+supermoto+bikebuilders+careerguidance+mentalfloss+nexus7+redditsync+nexus5+tasker')   #which subreddits i need to work on?
 except:
@@ -232,7 +231,7 @@ try:
 							if i<10:
 								ind = app.find('.') #i check if i need to remove a dot
 								if ind!=-1:
-								   app = app[:ind]
+									app = app[:ind]
 								if len(app.strip()) > 0:
 									toAdd = generateComment(app)   #i generate the comment
 									if toAdd is not False:
