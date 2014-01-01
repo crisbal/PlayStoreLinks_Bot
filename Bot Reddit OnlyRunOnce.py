@@ -25,6 +25,8 @@ from time import gmtime, strftime
 from bs4 import BeautifulSoup  #to parse html
 
 dbFile = "db" + "7"   #which is the file i need to save already done applications?
+cacheFile = '/tmp/botcommentscache' #which is the file i need to save already done comments?
+
 
 fileOpened = False   #flag to check if cache files are already opened, I need to do something better
 
@@ -161,7 +163,7 @@ open('theBotIsRunning', 'w').close()  #create the file that tell the bot is runn
 try:
 	with open ("login.txt", "r") as loginFile:     #reading login info from a file, it should be username (newline) password
    		loginInfo = loginFile.readlines()
-   		
+
    	loginInfo[0] = loginInfo[0].replace('\n', '')
    	loginInfo[1] = loginInfo[1].replace('\n', '')
 
@@ -177,12 +179,12 @@ regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my regex
 
 ###############################COMMENTS CACHE to avoid analyzing already done comments###########################################
 already_done = []  #the array filled with entries i already analized
-if(os.path.isfile('/tmp/botcommentscache')):
-	f = open('/tmp/botcommentscache', 'r+') #my cache
+if(os.path.isfile(cacheFile)):
+	f = open(cacheFile, 'r+') #my cache
 	if f.tell() != os.fstat(f.fileno()).st_size:   #if the file isn't at its end or empty
 		already_done = pickle.load(f)
 	f.close()
-f = open('/tmp/botcommentscache', 'w+')
+f = open(cacheFile, 'w+')
 ###############################LINKS CACHE to avoid useless search requests############################################
 nameLinkDict = dict()
 if(os.path.isfile(dbFile)):
