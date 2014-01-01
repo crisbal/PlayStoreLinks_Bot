@@ -161,7 +161,7 @@ open('theBotIsRunning', 'w').close()  #create the file that tell the bot is runn
 try:
 	with open ("login.txt", "r") as loginFile:     #reading login info from a file, it should be username (newline) password
    		loginInfo = loginFile.readlines()
-   	print(loginInfo)
+   		
    	loginInfo[0] = loginInfo[0].replace('\n', '')
    	loginInfo[1] = loginInfo[1].replace('\n', '')
 
