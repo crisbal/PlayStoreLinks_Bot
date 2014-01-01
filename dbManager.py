@@ -1,3 +1,5 @@
+#this is used to manually fix broken cache links, you write the name of the app and then you fix the link if needed
+
 import pickle
 import os
 dbFile = "db" + "7"
