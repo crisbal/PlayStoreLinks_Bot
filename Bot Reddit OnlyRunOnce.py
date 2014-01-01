@@ -60,12 +60,12 @@ atexit.register(exit_handler)  #register the function that get called on exit
 
  
 def cleanString(appName):   #take care of "exploits" done by formatting the app name
- 	return appName.lower().replace("*","").replace("~~","").replace("^","").replace("\""," ").replace("]"," ").replace("["," ").replace("("," ").replace(")"," ").strip()
+ 	return appName.replace("*","").replace("~~","").replace("^","").replace("\""," ").replace("]"," ").replace("["," ").replace("("," ").replace(")"," ").strip()
 
 
 #find the app name and get the url
 def generateComment( comment ):
-	appName = cleanString(comment)
+	appName = cleanString(comment).lower()
 	print ("Now searching for app: " + appName)
 
 	if appName in nameLinkDict:  #if I have the app on the local cache
@@ -244,7 +244,7 @@ try:
 							else:
 								break
 					if nFound > 0:
-						generatedComment += "\n\n------\n\n**[^About ^the ^bot.](http://www.reddit.com/r/cris9696/comments/1tf0vr/)**^( Feedback/bug report? Send a message to ) ^[cris9696](http://www.reddit.com/message/compose?to=cris9696).\n\n"
+						generatedComment += "\n\n------\n\n**[^I ^am ^now ^open ^source!](http://www.reddit.com/r/cris9696/comments/1u6d1p/)**^( Feedback/bug report? Send a message to ) ^[cris9696](http://www.reddit.com/message/compose?to=cris9696).\n\n"
 						while True:	
 							try:  #i try to reply to the comment
 								if not alreadyAnswered:
