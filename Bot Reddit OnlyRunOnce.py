@@ -23,7 +23,7 @@ from time import gmtime, strftime
 from bs4 import BeautifulSoup  #to parse html
 import logging
 
-dbFile = "db" + "Debug"   #which is the file i need to save already done applications?
+dbFile = "db" + "7"   #which is the file i need to save already done applications?
 cacheFile = '/tmp/botcommentscache' #which is the file i need to save already done comments?
 logging.basicConfig(filename='bot.log',level=logging.INFO,format="%(asctime)s %(message)s")
 
