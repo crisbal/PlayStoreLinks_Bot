@@ -49,5 +49,5 @@ Want to help or want help?
 
 LICENSE
 ==================
-DO WHATEVER YOU WANT WITH IT BUT PLEASE GIVE ME CREDIT. 
+MIT License
 
