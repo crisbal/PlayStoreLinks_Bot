@@ -27,11 +27,7 @@ Here: http://www.reddit.com/r/cris9696/comments/1rhsyq/
 TODO
 ==================
 
-Logging System
-
-Fix Random Crashes
-
-Overall Improvement
+You tell me!
 
 
 
