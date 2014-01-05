@@ -26,6 +26,7 @@ import logging
 
 dbFile = "db" + "7"   #which is the file i need to save already done applications?
 cacheFile = '/tmp/botcommentscache' #which is the file i need to save already done comments?
+categoriesFolder = "categories"
 logging.basicConfig(filename='bot.log',level=logging.INFO,format="%(asctime)s %(message)s")
 
 
@@ -142,9 +143,64 @@ def exitBot():  #function to exit the bot, will be used when logging will be imp
 	sys.exit()
 
 
-def log(what):   #this log and print everything, use this and not print
-	print(what.encode("ascii", "ignore"))
+def log(what = "Not defined"):   #this log and print everything, use this and not print
+	print(str(what.encode("ascii", "ignore")))
 	logging.info(what)
+
+def isDone(comment):  #check if a comment object is already done
+	if comment.id not in already_done and comment.author.name !="PlayStoreLinks_Bot":  #if it is not in the already_done array it means i need to work on it.
+		comment_replies = comment.replies #i get its replies
+		for reply in comment_replies: #for each reply
+			if reply.author.name == "PlayStoreLinks_Bot":  #i check if i answered
+				already_done.append(comment.id)  #i add it to the list
+				return True
+		return False
+	else:
+		return True
+
+def reply(what,comment): #reply to a comment object with the what string
+	what += "\n\n------\n\n**[^I ^am ^now ^open ^source!](http://www.reddit.com/r/cris9696/comments/1u6d1p/)**^( Feedback/bug report? Send a message to ) ^[cris9696](http://www.reddit.com/message/compose?to=cris9696).\n\n"
+	while True:
+		try:  #i try to reply to the comment
+			comment.reply(what)
+			break
+		except praw.errors.RateLimitExceeded as error:
+			log ("Doing too much, sleeping for " + str(error.sleep_time))
+			time.sleep(error.sleep_time)
+		except Exception as e:
+			log ("Exception occured while replying: " + str(e))
+			time.sleep(3)
+
+def generateCategory(categoryName):   #link to a full category of apps, like all reddit apps or facebook apps
+	log("Searching for category: " + categoryName)
+	text = ""
+	dictOfApps= dict()
+	categoryName = cleanString(categoryName).lower()
+
+	redditCat = ["reddit","reddit app","reddit apps","reddit client","reddit clients"]
+	facebookCat = ["facebook","facebook apps","facebook app","facebook client","facebook clients"]
+	keyboardCat = ["keyboard","keyboards"]
+	smsCat = ["sms","sms app","sms apps","sms client","sms clients"]
+	if categoryName in redditCat:
+		text = "List of **Reddit Apps**:\n\n"
+		dictOfApps = pickle.load(open(categoriesFolder+"/reddit", 'r+'))
+	elif categoryName in facebookCat:
+		text = "List of **Facebook Apps**:\n\n"
+		dictOfApps = pickle.load(open(categoriesFolder+"/facebook", 'r+'))
+	elif categoryName in keyboardCat:
+		text = "List of **Keyboards**:\n\n"
+		dictOfApps = pickle.load(open(categoriesFolder+"/keyboard", 'r+'))
+	elif categoryName in smsCat:
+		text = "List of **SMS Apps**:\n\n"
+		dictOfApps = pickle.load(open(categoriesFolder+"/sms", 'r+'))
+	else:
+		return False
+
+	
+	for key in sorted(dictOfApps.iterkeys()):
+		text += "[**" + key.title() + "**]("+dictOfApps[key]+")\n\n"
+	return text + "\n\n^(An app is missing? Please write to my author about it)\n\n"
+
 """
  __  __    _    ___ _   _ 
 |  \/  |  / \  |_ _| \ | |
@@ -185,7 +241,11 @@ except Exception as e:
 log("Logging in succesfull")
 
 regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my regex
+regexCategory = re.compile("\\blink[\s]*me[\s]*category[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my regex
 #regex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my debug regex
+
+
+
 ###############################COMMENTS CACHE to avoid analyzing already done comments###########################################
 already_done = []  #the array filled with entries i already analized
 if(os.path.isfile(cacheFile)):
@@ -194,6 +254,8 @@ if(os.path.isfile(cacheFile)):
 		already_done = pickle.load(f)
 	f.close()
 f = open(cacheFile, 'w+')
+
+
 ###############################LINKS CACHE to avoid useless search requests############################################
 nameLinkDict = dict()
 if(os.path.isfile(dbFile)):
@@ -202,9 +264,12 @@ if(os.path.isfile(dbFile)):
 		nameLinkDict = pickle.load(fi)
 	fi.close()
 fi = open(dbFile, 'w+')
+
+
+
+
 #######################################################################################
 fileOpened = True
-
 
 try:	#i try to get the comments
 	log("Getting the comments")
@@ -218,55 +283,51 @@ try:
 	for comment in subreddit_comments: #for each comment in the subreddit
 		alreadyAnswered = False
 		generatedComment = ""
-		matches = regex.findall(comment.body.lower().replace("*","").replace("~~","").replace("^",""))   #i get the regex match
-		if len(matches)>0:  #if it is something (aka valid comment)
-			if comment.id not in already_done and comment.author.name !="PlayStoreLinks_Bot":  #if it is not in the already_done array it means i need to work on it.
-				comment_replies = comment.replies #i get its replies
-				
-				for reply in comment_replies: #for each reply
-					if reply.author.name == "PlayStoreLinks_Bot":  #i check if i answered
-						alreadyAnswered = True  #i answered
-						already_done.append(comment.id)  #i add it to the list
-						break 
-			
-				if not alreadyAnswered: #i need to answer
-					nFound = 0
-					i = 0
-					for match in matches:
-						match = match.split(",") #split the match.
-						if len(match)>10 :
-							generatedComment += "You requested more than 10 apps. I will only link to the first 10.\n\n"
-							log ("More than 10 apps found in a comment")
 
-						for app in match:  #foreach app
-							if i<10:
-								ind = app.find('.') #i check if i need to remove a dot
-								if ind!=-1:
-									app = app[:ind]
-								if len(app.strip()) > 0:
-									toAdd = generateComment(app)   #i generate the comment
-									if toAdd is not False:
-										generatedComment += toAdd
-										nFound = nFound+1
-									else:
-										generatedComment += "I am sorry, I can't find " + app.title() + ". \n\n"
-									i = i+1
-							else:
-								break
-					if nFound > 0:
-						generatedComment += "\n\n------\n\n**[^I ^am ^now ^open ^source!](http://www.reddit.com/r/cris9696/comments/1u6d1p/)**^( Feedback/bug report? Send a message to ) ^[cris9696](http://www.reddit.com/message/compose?to=cris9696).\n\n"
-						while True:	
-							try:  #i try to reply to the comment
-								if not alreadyAnswered:
-									alreadyAnswered = True
-									comment.reply(generatedComment)
-								break
-							except praw.errors.RateLimitExceeded as error:
-								log ("I am doing too much, I have to sleep for " + str(error.sleep_time))
-								time.sleep(error.sleep_time)
-							except Exception as e:
-								log ("Exception occured while replying: " + str(e))
-								time.sleep(3)
+		normalMatches = regex.findall(comment.body.lower().replace("*","").replace("~~","").replace("^",""))   #i get the regex match
+		categoryMatches = regexCategory.findall(comment.body.lower().replace("*","").replace("~~","").replace("^",""))   #i get the regex match
+		
+		if len(categoryMatches)>0:
+			alreadyAnswered = isDone(comment)
+			generatedComment = ""
+			if not alreadyAnswered: #i need to answer
+				for match in categoryMatches:
+					match = match.split(",") #split the match.
+					for app in match:
+						toAdd = generateCategory(app)
+						if toAdd is not False:
+							generatedComment += toAdd
+				if len(generatedComment)>0:
+					reply(generatedComment,comment)
+
+		elif len(normalMatches)>0:  #if it is something (aka valid comment)
+			alreadyAnswered = isDone(comment)
+			if not alreadyAnswered: #i need to answer
+				nFound = 0
+				i = 0
+				for match in normalMatches:
+					match = match.split(",") #split the match.
+					if len(match)>10 :
+						generatedComment += "You requested more than 10 apps. I will only link to the first 10.\n\n"
+						log ("More than 10 apps found in a comment")
+
+					for app in match:  #foreach app
+						if i<10:
+							ind = app.find('.') #i check if i need to remove a dot
+							if ind!=-1:
+								app = app[:ind]
+							if len(app.strip()) > 0:
+								toAdd = generateComment(app)   #i generate the comment
+								if toAdd is not False:
+									generatedComment += toAdd
+									nFound = nFound+1
+								else:
+									generatedComment += "I am sorry, I can't find " + app.title() + ". \n\n"
+								i = i+1
+						else:
+							break
+				if nFound > 0:
+					reply(generatedComment,comment)
 except Exception as e:
 	log ("Exception occured in the main try-catch: " + str(e))
 
