@@ -10,8 +10,6 @@ IF YOU FIND ANY BUG OR ANYTHING EVIL OR ANY EXPLOITABLE PART PLEASE REPORT IT TO
 TODO:
 
 *fix random crashes, sometimes I find the cache file smaller, this mean the bot crashed while running(?)
-
-*implement a log system, so I make sure everything is doing ok
 """
 import praw   #reddit wrapper
 import requests
@@ -142,7 +140,7 @@ def exitBot():  #function to exit the bot, will be used when logging will be imp
 	sys.exit()
 
 
-def log(what):
+def log(what):   #this log and print everything, use this and not print
 	print(what)
 	logging.info(what)
 """
@@ -184,8 +182,8 @@ except Exception as e:
 
 log("Logging in succesfull")
 
-#regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my regex
-regex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my debug regex
+regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my regex
+#regex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my debug regex
 ###############################COMMENTS CACHE to avoid analyzing already done comments###########################################
 already_done = []  #the array filled with entries i already analized
 if(os.path.isfile(cacheFile)):
