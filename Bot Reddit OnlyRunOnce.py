@@ -23,10 +23,11 @@ import sys
 import atexit  #this is needed to handle unexpected crashes or just normal exiting
 from time import gmtime, strftime 
 from bs4 import BeautifulSoup  #to parse html
+import logging
 
-dbFile = "db" + "7"   #which is the file i need to save already done applications?
+dbFile = "db" + "Debug"   #which is the file i need to save already done applications?
 cacheFile = '/tmp/botcommentscache' #which is the file i need to save already done comments?
-
+logging.basicConfig(filename='bot.log',level=logging.INFO,format="%(asctime)s %(message)s")
 
 fileOpened = False   #flag to check if cache files are already opened, I need to do something better
 
@@ -52,7 +53,7 @@ def exit_handler():  #called when exiting the program
 		f.close()
 		pickle.dump(nameLinkDict, fi)
 		fi.close()
-	log("Shutting Down")  
+	log("Shutting Down\n\n\n")  
 	os.remove("theBotIsRunning")   #this file is to check if the bot is running
 
 atexit.register(exit_handler)  #register the function that get called on exit
@@ -143,6 +144,7 @@ def exitBot():  #function to exit the bot, will be used when logging will be imp
 
 def log(what):
 	print(what)
+	logging.info(what)
 """
  __  __    _    ___ _   _ 
 |  \/  |  / \  |_ _| \ | |
@@ -174,15 +176,16 @@ try:
 
 	r = praw.Reddit('/u/PlayStoreLinks_Bot by /u/cris9696')
 	r.login(loginInfo[0], loginInfo[1])
-	subreddit = r.get_subreddit('cris9696+AndroidGaming+AndroidQuestions+Android+AndroidUsers+twitaaa+AndroidApps+AndroidThemes+harley+supermoto+bikebuilders+careerguidance+mentalfloss+nexus7+redditsync+nexus5+tasker')   #which subreddits i need to work on?
+	#subreddit = r.get_subreddit('cris9696+AndroidGaming+AndroidQuestions+Android+AndroidUsers+twitaaa+AndroidApps+AndroidThemes+harley+supermoto+bikebuilders+careerguidance+mentalfloss+nexus7+redditsync+nexus5+tasker')   #which subreddits i need to work on?
+	subreddit = r.get_subreddit('cris9696')   #debug
 except Exception as e:
 	log("Exception occured on login: " + e)
 	exitBot()
 
-log("loggedIn")
+log("Logging in succesfull")
 
-regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my regex
-
+#regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my regex
+regex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my debug regex
 ###############################COMMENTS CACHE to avoid analyzing already done comments###########################################
 already_done = []  #the array filled with entries i already analized
 if(os.path.isfile(cacheFile)):
