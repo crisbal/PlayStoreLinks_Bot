@@ -23,9 +23,11 @@ from time import gmtime, strftime
 from bs4 import BeautifulSoup  #to parse html
 import logging
 
+
 dbFile = "db" + "7"   #which is the file i need to save already done applications?
 cacheFile = '/tmp/botcommentscache' #which is the file i need to save already done comments?
 logging.basicConfig(filename='bot.log',level=logging.INFO,format="%(asctime)s %(message)s")
+
 
 fileOpened = False   #flag to check if cache files are already opened, I need to do something better
 
@@ -75,8 +77,8 @@ def generateComment( comment ):
 	while True:
 		try:
 			#this is a literal search, it uses " " to match the exact same name, if this is not working I use similar search
-			request = requests.get("https://play.google.com/store/search?q=\"" + appName.replace("+","%2B").replace(" ","+").replace("&","%26")+"\"&c=apps&hl=en")  #send the request  
-		   
+			request = requests.get("http://play.google.com/store/search?q=\"" + appName.replace("+","%2B").replace(" ","+").replace("&","%26")+"\"&c=apps&hl=en")  #send the request  
+			
 			page = BeautifulSoup(request.text)  #parse the page we just got to so we can use it as an object for bs4
 
 			searchResults = page.findAll(attrs={'class': "card-content-link"})
@@ -98,7 +100,7 @@ def generateComment( comment ):
 			else:
 				return similarSearch(appName)
 		except Exception as e:
-			log ("Exception occured on LITERAL SEARCH: " + e)
+			log ("Exception occured on LITERAL SEARCH: " + str(e))
 			time.sleep(3)
 
 
@@ -107,7 +109,7 @@ def similarSearch(appName):
 	#similar search: only if literal search returned no results, we use similar search, this means "what google play store thinks is the app we are looking for"
 	#it should also fix spelling error
 	try:
-		request = requests.get("https://play.google.com/store/search?q=" + appName.replace("+","%2B").replace(" ","+").replace("&","%26")+"&c=apps&hl=en")  #send the request
+		request = requests.get("http://play.google.com/store/search?q=" + appName.replace("+","%2B").replace(" ","+").replace("&","%26")+"&c=apps&hl=en")  #send the request
 			   
 		page = BeautifulSoup(request.text)  #parse the page we just got to so we can use it as an object for bs4
 
@@ -133,7 +135,7 @@ def similarSearch(appName):
 			log("Can't find an app named " + appName.title() + "!") #log
 			return False
 	except Exception as e:
-		log ("Exception occured on LITERAL SEARCH: " + e)
+		log ("Exception occured on LITERAL SEARCH: " + str(e))
 		time.sleep(3)
 
 def exitBot():  #function to exit the bot, will be used when logging will be implemented
@@ -141,7 +143,7 @@ def exitBot():  #function to exit the bot, will be used when logging will be imp
 
 
 def log(what):   #this log and print everything, use this and not print
-	print(what)
+	print(what.encode("ascii", "ignore"))
 	logging.info(what)
 """
  __  __    _    ___ _   _ 
@@ -174,10 +176,10 @@ try:
 
 	r = praw.Reddit('/u/PlayStoreLinks_Bot by /u/cris9696')
 	r.login(loginInfo[0], loginInfo[1])
-	#subreddit = r.get_subreddit('cris9696+AndroidGaming+AndroidQuestions+Android+AndroidUsers+twitaaa+AndroidApps+AndroidThemes+harley+supermoto+bikebuilders+careerguidance+mentalfloss+nexus7+redditsync+nexus5+tasker')   #which subreddits i need to work on?
-	subreddit = r.get_subreddit('cris9696')   #debug
+	subreddit = r.get_subreddit('cris9696+AndroidGaming+AndroidQuestions+Android+AndroidUsers+twitaaa+AndroidApps+AndroidThemes+harley+supermoto+bikebuilders+careerguidance+mentalfloss+nexus7+redditsync+nexus5+tasker')   #which subreddits i need to work on?
+	#subreddit = r.get_subreddit('cris9696')   #debug
 except Exception as e:
-	log("Exception occured on login: " + e)
+	log("Exception occured on login: " + str(e))
 	exitBot()
 
 log("Logging in succesfull")
@@ -208,7 +210,7 @@ try:	#i try to get the comments
 	log("Getting the comments")
 	subreddit_comments = subreddit.get_comments()  
 except Exception as e:
-	log("Exception occured while gettin the comments: " + e)
+	log("Exception occured while gettin the comments: " + str(e))
 	exitBot()
 
 log("Comments OK")
@@ -263,10 +265,10 @@ try:
 								log ("I am doing too much, I have to sleep for " + str(error.sleep_time))
 								time.sleep(error.sleep_time)
 							except Exception as e:
-								log ("Exception occured while replying: " + e)
+								log ("Exception occured while replying: " + str(e))
 								time.sleep(3)
 except Exception as e:
-	log ("Exception occured in the main try-catch: " + e)
+	log ("Exception occured in the main try-catch: " + str(e))
 
 exitBot()
 
