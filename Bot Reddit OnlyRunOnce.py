@@ -159,7 +159,7 @@ def isDone(comment):  #check if a comment object is already done
 		return True
 
 def reply(what,comment): #reply to a comment object with the what string
-	what += "\n\n------\n\n**[^I ^am ^now ^open ^source!](http://www.reddit.com/r/cris9696/comments/1u6d1p/)**^( Feedback/bug report? Send a message to ) ^[cris9696](http://www.reddit.com/message/compose?to=cris9696).\n\n"
+	what += "\n\n------\n\n**[^Big ^Update! ^Read ^here!](http://www.reddit.com/r/cris9696/comments/1ugz82/)**^( Feedback/bug report? Send a message to ) ^[cris9696](http://www.reddit.com/message/compose?to=cris9696).\n\n"
 	while True:
 		try:  #i try to reply to the comment
 			comment.reply(what)
