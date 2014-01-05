@@ -3,7 +3,7 @@
 
 A bot made by /u/cris9696
 
-DO WHATEVER YOU WANT WITH IT BUT PLEASE GIVE ME CREDIT. 
+UNDER MIT LICENSE
 
 IF YOU FIND ANY BUG OR ANYTHING EVIL OR ANY EXPLOITABLE PART PLEASE REPORT IT TO ME
 
@@ -11,7 +11,7 @@ TODO:
 
 *fix random crashes, sometimes I find the cache file smaller, this mean the bot crashed while running(?)
 
-*implement a log system, so I make sure everything is doing ok   (all the print should be replaced with logging)
+*implement a log system, so I make sure everything is doing ok
 """
 import praw   #reddit wrapper
 import requests
@@ -52,7 +52,7 @@ def exit_handler():  #called when exiting the program
 		f.close()
 		pickle.dump(nameLinkDict, fi)
 		fi.close()
-	print("Shutting Down")  
+	log("Shutting Down")  
 	os.remove("theBotIsRunning")   #this file is to check if the bot is running
 
 atexit.register(exit_handler)  #register the function that get called on exit
@@ -65,12 +65,12 @@ def cleanString(appName):   #take care of "exploits" done by formatting the app 
 #find the app name and get the url
 def generateComment( comment ):
 	appName = cleanString(comment).lower()
-	print ("Now searching for app: " + appName)
+	log ("Now searching for app: " + appName)
 
 	if appName in nameLinkDict:  #if I have the app on the local cache
 		comment = "[**" + appName.title() + "**](" + nameLinkDict[appName] + ")  -  "  #generate the first url
 		comment += "Search for \"" + appName.title() + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + appName.replace("+","%2B").replace(" ","+") + ")\n\n"
-		print (appName + " found on the local cache. No need to search on the Internet") 
+		log (appName + " found on the local cache") 
 		return comment
 
 	while True:
@@ -91,15 +91,15 @@ def generateComment( comment ):
 					comment = "[**" + trueName + "**](" + appLink + ")  -  "  #generate the first url
 					comment += "Search for \"" + appName.title() + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + appName.replace("+","%2B").replace(" ","+") + ")\n\n"  #generate the second url (aka search url)
 					
-					print("Search: " + appName.title() + " - Found: " + trueName + " - " + appLink + " LITERAL SEARCH") #log
+					log("Search: " + appName.title() + " - Found: " + trueName + " - LITERAL SEARCH") #log
 					
 					return comment;
 				else:
 					return similarSearch(appName)
 			else:
 				return similarSearch(appName)
-		except:
-			print ("Error while generating the comment/looking for the app, trying again in a few seconds.")
+		except Exception as e:
+			log ("Exception occured on LITERAL SEARCH: " + e)
 			time.sleep(3)
 
 
@@ -107,36 +107,42 @@ def generateComment( comment ):
 def similarSearch(appName):
 	#similar search: only if literal search returned no results, we use similar search, this means "what google play store thinks is the app we are looking for"
 	#it should also fix spelling error
-	request = requests.get("https://play.google.com/store/search?q=" + appName.replace("+","%2B").replace(" ","+").replace("&","%26")+"&c=apps&hl=en")  #send the request
-		   
-	page = BeautifulSoup(request.text)  #parse the page we just got to so we can use it as an object for bs4
+	try:
+		request = requests.get("https://play.google.com/store/search?q=" + appName.replace("+","%2B").replace(" ","+").replace("&","%26")+"&c=apps&hl=en")  #send the request
+			   
+		page = BeautifulSoup(request.text)  #parse the page we just got to so we can use it as an object for bs4
 
-	if len(page.findAll(attrs={'class': "card-content-link"})) is not 0:
-		searchResults = page.findAll(attrs={'class': "card-content-link"})
-		if len(searchResults) is not 0:
-			link = searchResults[0] #we get the link if it exists
-			parent = link.parent.parent
-			trueName = cleanString(parent.findAll(attrs={'class': "title"})[0].get('title'))
-			if link is not None: #if the link is not null
-				appLink = "https://play.google.com" + link.get('href')  #url of the app
-				nameLinkDict[trueName.lower()] = appLink
-				comment = "[**" + trueName + "**](" + appLink + ")  -  "  #generate the first url
-				comment += "Search for \"" + appName.title() + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + appName.replace("+","%2B").replace(" ","+") + ")\n\n"  #generate the second url (aka search url)
-				
-				print("Search: " + appName.title() + " - Found: " + trueName + " - " + appLink + " SIMILAR SEARCH") #log
-				
-				return comment;
+		if len(page.findAll(attrs={'class': "card-content-link"})) is not 0:
+			searchResults = page.findAll(attrs={'class': "card-content-link"})
+			if len(searchResults) is not 0:
+				link = searchResults[0] #we get the link if it exists
+				parent = link.parent.parent
+				trueName = cleanString(parent.findAll(attrs={'class': "title"})[0].get('title'))
+				if link is not None: #if the link is not null
+					appLink = "https://play.google.com" + link.get('href')  #url of the app
+					nameLinkDict[trueName.lower()] = appLink
+					comment = "[**" + trueName + "**](" + appLink + ")  -  "  #generate the first url
+					comment += "Search for \"" + appName.title() + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + appName.replace("+","%2B").replace(" ","+") + ")\n\n"  #generate the second url (aka search url)
+					
+					log("Search: " + appName.title() + " - Found: " + trueName + " - SIMILAR SEARCH") #log
+					
+					return comment;
+			else:
+				log("Can't find an app named " + appName.title() + "!") #log
+				return False
 		else:
-			print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " - " + "Can't find an app named " + appName.title() + "!") #log
+			log("Can't find an app named " + appName.title() + "!") #log
 			return False
-	else:
-		print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " - " + "Can't find an app named " + appName.title() + "!") #log
-		return False
-
+	except Exception as e:
+		log ("Exception occured on LITERAL SEARCH: " + e)
+		time.sleep(3)
 
 def exitBot():  #function to exit the bot, will be used when logging will be implemented
 	sys.exit()
 
+
+def log(what):
+	print(what)
 """
  __  __    _    ___ _   _ 
 |  \/  |  / \  |_ _| \ | |
@@ -153,7 +159,7 @@ def exitBot():  #function to exit the bot, will be used when logging will be imp
 
 
 if(os.path.isfile('theBotIsRunning')):   #if the bot is already running
-	print("The bot is already running, shutting down")
+	log("Bot already running!")
 	exitBot()
 
 #the bot was not running 
@@ -169,10 +175,11 @@ try:
 	r = praw.Reddit('/u/PlayStoreLinks_Bot by /u/cris9696')
 	r.login(loginInfo[0], loginInfo[1])
 	subreddit = r.get_subreddit('cris9696+AndroidGaming+AndroidQuestions+Android+AndroidUsers+twitaaa+AndroidApps+AndroidThemes+harley+supermoto+bikebuilders+careerguidance+mentalfloss+nexus7+redditsync+nexus5+tasker')   #which subreddits i need to work on?
-except:
+except Exception as e:
+	log("Exception occured on login: " + e)
 	exitBot()
 
-print("loggedIn")
+log("loggedIn")
 
 regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)",re.M)   #my regex
 
@@ -197,12 +204,13 @@ fileOpened = True
 
 
 try:	#i try to get the comments
-	print("Getting the comments")
+	log("Getting the comments")
 	subreddit_comments = subreddit.get_comments()  
-except:
+except Exception as e:
+	log("Exception occured while gettin the comments: " + e)
 	exitBot()
 
-print("I got the comments")
+log("Comments OK")
 try:		
 	for comment in subreddit_comments: #for each comment in the subreddit
 		alreadyAnswered = False
@@ -225,7 +233,7 @@ try:
 						match = match.split(",") #split the match.
 						if len(match)>10 :
 							generatedComment += "You requested more than 10 apps. I will only link to the first 10.\n\n"
-							print ("More than 10 apps found in a comment")
+							log ("More than 10 apps found in a comment")
 
 						for app in match:  #foreach app
 							if i<10:
@@ -251,13 +259,13 @@ try:
 									comment.reply(generatedComment)
 								break
 							except praw.errors.RateLimitExceeded as error:
-								print (strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "  - I am doing too much, I have to sleep for " + str(error.sleep_time))
+								log ("I am doing too much, I have to sleep for " + str(error.sleep_time))
 								time.sleep(error.sleep_time)
-							except: 
-								print ("Error replying, trying again in a few seconds.")
+							except Exception as e:
+								log ("Exception occured while replying: " + e)
 								time.sleep(3)
-except:
-	exitBot()
+except Exception as e:
+	log ("Exception occured in the main try-catch: " + e)
 
 exitBot()
 
