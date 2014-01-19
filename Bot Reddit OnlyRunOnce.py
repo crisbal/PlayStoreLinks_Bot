@@ -162,7 +162,7 @@ def reply(what,comment): #reply to a comment object with the what string
 			time.sleep(error.sleep_time)
 		except Exception as e:
 			log ("Exception occured while replying: " + str(e))
-			time.sleep(3)
+			break
 
 def generateCategory(categoryName):   #link to a full category of apps, like all reddit apps or facebook apps
 	log("Searching for category: " + categoryName)
@@ -225,6 +225,7 @@ try:
 except praw.errors.RateLimitExceeded as error:
 	log ("Doing too much, sleeping for " + str(error.sleep_time))
 	time.sleep(error.sleep_time)
+	exitBot()
 except Exception as e:
 	log("Exception occured on login: " + str(e))
 	exitBot()
