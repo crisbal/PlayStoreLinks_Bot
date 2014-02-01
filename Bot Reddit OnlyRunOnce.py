@@ -238,15 +238,15 @@ def reply(what, comment_to_reply_to):
             ".com/r/cris9696/comments/1ugz82/)**^( Feedback/bug report? " + \
             "Send a message to ) ^[cris9696](http://www.reddit.com/message" + \
             "/compose?to=cris9696).\n\n"
-        # i try to reply to the comment
-        try:
-            comment_to_reply_to.reply(what)
-        except praw.errors.RateLimitExceeded as rl_error:
-            log("Doing too much, sleeping for " + str(rl_error.sleep_time))
-            time.sleep(rl_error.sleep_time)
-        except Exception as reply_exception:
-            log("Exception occurred while replying: " + str(reply_exception))
-            time.sleep(3)
+    # i try to reply to the comment
+    try:
+        comment_to_reply_to.reply(what)
+    except praw.errors.RateLimitExceeded as rl_error:
+        log("Doing too much, sleeping for " + str(rl_error.sleep_time))
+        time.sleep(rl_error.sleep_time)
+    except Exception as reply_exception:
+        log("Exception occurred while replying: " + str(reply_exception))
+        time.sleep(3)
 
 
 # link to a full category of apps, like all reddit apps or facebook apps
