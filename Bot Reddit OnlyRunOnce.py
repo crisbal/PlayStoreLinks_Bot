@@ -234,10 +234,7 @@ def isDone(comment_to_check):
 
 # reply to a comment object with the what string
 def reply(what, comment_to_reply_to):
-    what += "\n\n------\n\n**[^Big ^Update! ^Read ^here!](http://www.reddit" + \
-            ".com/r/cris9696/comments/1ugz82/)**^( Feedback/bug report? " + \
-            "Send a message to ) ^[cris9696](http://www.reddit.com/message" + \
-            "/compose?to=cris9696).\n\n"
+    what += "\n\n------\n\n[^Source ^Code](https://github.com/cris9696/PlayStoreLinks_Bot) ^| [^Feedback/Bug ^report](http://www.reddit.com/r/cris9696) ^| ^Bot ^by ^/u/cris9696 "
     # i try to reply to the comment
     try:
         comment_to_reply_to.reply(what)
