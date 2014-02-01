@@ -238,12 +238,9 @@ def reply(what, comment_to_reply_to):
             ".com/r/cris9696/comments/1ugz82/)**^( Feedback/bug report? " + \
             "Send a message to ) ^[cris9696](http://www.reddit.com/message" + \
             "/compose?to=cris9696).\n\n"
-    while True:
-
         # i try to reply to the comment
         try:
             comment_to_reply_to.reply(what)
-            break
         except praw.errors.RateLimitExceeded as rl_error:
             log("Doing too much, sleeping for " + str(rl_error.sleep_time))
             time.sleep(rl_error.sleep_time)
