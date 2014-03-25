@@ -1,5 +1,5 @@
 """
-/u/PlayStoreLinks_Bot
+/u/PlayStoreLinks__Bot
 
 A bot made by /u/cris9696
 
@@ -20,7 +20,6 @@ from bs4 import BeautifulSoup   # to parse html
 import logging
 import urllib
 
-
 # which is the file i need to save already done applications?
 dbFile = "db" + "7"
 
@@ -31,22 +30,41 @@ categoriesFolder = "categories"
 logging.basicConfig(filename="bot.log", level=logging.INFO,
                     format="%(asctime)s %(message)s")
 
+
+##### class declaration ####
+class App():
+    """
+    This is the class for an app item it has got a name, a link, a price, a rating etc.
+    """
+    def __init__(self):
+        pass
+        
+        
 ##### function declarations #####
 
 
 # called when exiting the program
 def exit_handler():
-    # Dump the caches
-    with open(cacheFile, 'w+') as cache_file:
-        pickle.dump(already_done, cache_file)
 
-    with open(dbFile, 'w+') as db_file:
-        pickle.dump(nameLinkDict, db_file)
+    os.remove("theBotIsRunning")
+
+    # Dump the caches
+    try:
+        with open(cacheFile, 'w+') as cache_file:
+            pickle.dump(already_done, cache_file)
+    except Exception as search_exception:
+        pass
+
+    try:
+        with open(dbFile, 'w+') as db_file:
+            pickle.dump(appList, db_file)
+    except Exception as search_exception:
+        pass
 
     log("Shutting Down\n\n\n")
 
-    # this file is to check if the bot is running
-    os.remove("theBotIsRunning")
+    
+    
 
 
 # register the function that get called on exit
@@ -60,6 +78,7 @@ def cleanString(appName):
         replace("(", " ").replace(")", " ").strip()
 
 
+#WTF IS THIS, I DONT REMBER IT
 def rightTitle(appName):
     appName = appName.title()
     index = appName.find("&")
@@ -76,62 +95,63 @@ def generateComment(comment_to_clean):
     appName = cleanString(comment_to_clean).lower()
     log("Now searching for app: " + appName)
 
-    # if I have the app on the local cache
-    if appName in nameLinkDict:
+    for app in appList:
+        if app.name == appName:
         # generate the first url
-        comment_to_clean = "[**" + rightTitle(appName) + "**](" + nameLinkDict[
-            appName] + ")  -  "
-        comment_to_clean += "Search for \"" + rightTitle(appName) + "\" on " + \
-                            "the [**Play Store**](https://play.google.com/" + \
-                            "store/search?q=" + urllib.quote_plus(appName, "") \
-                            + ")\n\n"
-        log(appName + " found on the local cache")
-        return comment_to_clean
+            piece_of_comment = "[**" + app.name.title() + "**](" + app.link + ")  -  Price: " + app.price + " - Rating: " + app.rating + "/100 - "
+            piece_of_comment += "Search for \"" + appName.encode("ascii", "ignore").title() + "\" on " + \
+                                "the [**Play Store**](https://play.google.com/" + \
+                                "store/search?q=" + urllib.quote_plus(appName.encode("ascii", "ignore"), "") \
+                                + ")\n\n"
+            log(app.name + " found on the local cache")
+            return piece_of_comment
 
     try:
         # this is a literal search, it uses " " to match the exact same name
         # if this is not working I use similar search
-
         #send the request
         request = requests.get("http://play.google.com/store/search?q=\"" +
-                               urllib.quote_plus(appName, "") +
+                               urllib.quote_plus(appName.encode("ascii", "ignore"), "") +
                                "\"&c=apps&hl=en")
-
         # parse the page we just got to so we can use it as an object for bs4
         page = BeautifulSoup(
             request.text)
 
         searchResults = page.findAll(attrs={"class": "card-content-link"})
         if len(searchResults) is not 0:
-
             # we get the link if it exists
-            link = searchResults[0]
-            parent = link.parent.parent
-            trueName = cleanString(
-                parent.findAll(attrs={"class": "title"})[0].get("title"))
-
+            linkObj = searchResults[0]
+           
             #if the link is not null
-            if link is not None:
+            if linkObj is not None:
+                parent = linkObj.parent.parent
+                trueName = cleanString(parent.findAll(attrs={"class": "title"})[0].get("title"))
+                
+                app = App()
+                app.name = trueName.lower()
+                app.link = "https://play.google.com" + linkObj.get("href")
+                app.price = "Free" if parent.findAll(attrs={"class": "price buy"})[0].get_text().strip().lower() == "free" else "Paid"
+                app.rating = parent.findAll(attrs={"class": "current-rating"})[0]["style"].strip().replace("width: ","")[:2]
+                
+                appList.append(app)
+                #TODO PRICE AND RATIGNG 
 
-                #url of the app
-                appLink = "https://play.google.com" + link.get("href")
-                nameLinkDict[trueName.lower()] = appLink
-
+                
                 #generate the first url
-                comment_to_clean = "[**" + trueName + \
-                                   "**](" + appLink + ")  -  "
+                piece_of_comment = "[**" + trueName + \
+                                   "**](" + app.link + ")  -  Price: " + app.price + " - Rating: " + app.rating + "/100 - "
 
                 #generate the second url (aka search url)
-                comment_to_clean += "Search for \"" + rightTitle(appName) + \
-                                    "\" on" + " the [**Play Store**](https:" + \
-                                    "//play.google.com" + "/store/search?q=" + \
-                                    urllib.quote_plus(appName, "") + ")\n\n"
-
+                piece_of_comment += "Search for \"" + appName.encode("ascii", "ignore").title() + \
+                                        "\" on" + " the [**Play Store**](https:" + \
+                                        "//play.google.com" + "/store/search?q=" + \
+                                        urllib.quote_plus(appName.encode("ascii", "ignore"), "") + ")\n\n"
                 # log
-                log("Search: " + rightTitle(appName) + " - Found: " + trueName
+                log("Search: " + appName + " - Found: " + app.name
                     + " - LITERAL SEARCH")
+                
 
-                return comment_to_clean
+                return piece_of_comment
             else:
                 return similarSearch(appName)
         else:
@@ -147,44 +167,51 @@ def similarSearch(appName):
     # this means "what google play store thinks is the app we are looking for"
     # it should also fix spelling error
     try:
-
-        # send the request
+        # this is a literal search, it uses " " to match the exact same name
+        # if this is not working I use similar search
+        #send the request
         request = requests.get("http://play.google.com/store/search?q=" +
-                               urllib.quote_plus(appName, "") + "&c=apps&hl=en")
-
+                               urllib.quote_plus(appName.encode("ascii", "ignore"), "") +
+                               "&c=apps&hl=en")
         # parse the page we just got to so we can use it as an object for bs4
-        page = BeautifulSoup(request.text)
+        page = BeautifulSoup(
+            request.text)
 
-        if len(page.findAll(attrs={"class": "card-content-link"})) is not 0:
-            searchResults = page.findAll(attrs={"class": "card-content-link"})
-            if len(searchResults) is not 0:
+        searchResults = page.findAll(attrs={"class": "card-content-link"})
+        if len(searchResults) is not 0:
+            # we get the link if it exists
+            linkObj = searchResults[0]
+           
+            #if the link is not null
+            if linkObj is not None:
+                parent = linkObj.parent.parent
+                trueName = cleanString(parent.findAll(attrs={"class": "title"})[0].get("title"))
+                
+                app = App()
+                app.name = trueName.lower()
+                app.link = "https://play.google.com" + linkObj.get("href")
+                app.price = "Free" if parent.findAll(attrs={"class": "price buy"})[0].get_text().strip().lower() == "free" else "Paid"
+                app.rating = parent.findAll(attrs={"class": "current-rating"})[0]["style"].strip().replace("width: ","")[:2]
+                
+                appList.append(app)
+                #TODO PRICE AND RATIGNG 
 
-                # we get the link if it exists
-                link = searchResults[0]
-                parent = link.parent.parent
-                trueName = cleanString(
-                    parent.findAll(attrs={"class": "title"})[0].get("title"))
+                
+                #generate the first url
+                piece_of_comment = "[**" + trueName + \
+                                   "**](" + app.link + ")  -  Price: " + app.price + " - Rating: " + app.rating + "/100 - "
 
-                # if the link is not null
-                if link is not None:
-                    # url of the app
-                    appLink = "https://play.google.com" + link.get("href")
-                    nameLinkDict[trueName.lower()] = appLink
+                #generate the second url (aka search url)
+                piece_of_comment += "Search for \"" + appName.encode("ascii", "ignore").title() + \
+                                        "\" on" + " the [**Play Store**](https:" + \
+                                        "//play.google.com" + "/store/search?q=" + \
+                                        urllib.quote_plus(appName.encode("ascii", "ignore"), "") + ")\n\n"
+                # log
+                log("Search: " + appName + " - Found: " + app.name
+                    + " - LITERAL SEARCH")
+                
 
-                    # generate the first url
-                    new_comment = "[**" + trueName + "**](" + appLink + ")  -  "
-
-                    # generate the second url (aka search url)
-                    new_comment += "Search for \"" + rightTitle(appName) + \
-                                   "\" on the [**Play Store**](https://" + \
-                                   "play.google.com/store/search?q=" + \
-                                   urllib.quote_plus(appName, "") + ")\n\n"
-
-                    # log
-                    log("Search: " + rightTitle(appName) + " - Found: " +
-                        trueName + " - SIMILAR SEARCH")
-
-                    return new_comment
+                return piece_of_comment
             else:
                 # log
                 log("Can't find an app named " + rightTitle(appName) + "!")
@@ -298,7 +325,7 @@ if __name__ == "__main__":
     open("theBotIsRunning", "w").close()
 
     try:
-
+	
         # reading login info from a file
         # it should be username (newline) password
         with open("login.txt", "r") as loginFile:
@@ -307,7 +334,7 @@ if __name__ == "__main__":
         loginInfo[0] = loginInfo[0].replace("\n", "")
         loginInfo[1] = loginInfo[1].replace("\n", "")
 
-        r = praw.Reddit("/u/PlayStoreLinks_Bot by /u/cris9696")
+        r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696")
         r.login(loginInfo[0], loginInfo[1])
 
         # which subreddits i need to work on?
@@ -339,9 +366,9 @@ if __name__ == "__main__":
 
     ######### COMMENTS CACHE to avoid analyzing already done comments #########
     # the array filled with entries i already analyzed
-    already_done = []
+    
     if os.path.isfile(cacheFile):
-
+        already_done = []
         # my cache
         with open(cacheFile, "r+") as f:
 
@@ -350,7 +377,7 @@ if __name__ == "__main__":
                 already_done = pickle.load(f)
 
     ########### LINKS CACHE to avoid useless search requests ###########
-    nameLinkDict = dict()
+    appList = []
     if os.path.isfile(dbFile):
 
         # my cache for links
@@ -358,7 +385,7 @@ if __name__ == "__main__":
 
             # if the file isn"t at its end or empty
             if fi.tell() != os.fstat(fi.fileno()).st_size:
-                nameLinkDict = pickle.load(fi)
+                appList = pickle.load(fi)
 
 ################################################################################
 
@@ -374,7 +401,7 @@ if __name__ == "__main__":
 
     log("Comments OK")
     try:
-
+        print("Here")
         # for each comment in the subreddit
         # noinspection PyUnboundLocalVariable
         for comment in subreddit_comments:
@@ -386,7 +413,7 @@ if __name__ == "__main__":
                 comment.body.lower().replace("*", "").replace("~~", "").
                 replace("^", ""))
 
-            # i get the regex match
+            # i get the regex match for the categories
             categoryMatches = regexCategory.findall(
                 comment.body.lower().replace("*", "").replace("~~", "").
                 replace("^", ""))
@@ -429,13 +456,11 @@ if __name__ == "__main__":
                         # foreach app
                         for app in match:
                             if i < 10:
-
                                 # i check if i need to remove a dot
                                 ind = app.find(".")
                                 if ind != -1:
                                     app = app[:ind]
                                 if len(app.strip()) > 0:
-
                                     #i generate the comment
                                     toAdd = generateComment(app)
                                     if toAdd is not False:
