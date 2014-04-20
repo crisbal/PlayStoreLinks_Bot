@@ -6,7 +6,7 @@ A reddit bot that links to apps when you ask him.
 
 What's included
 ==================
-Together with the source code you will find the login.txt file that you need to edit with the credentials and the dbManager.py script, used to manually fix wrong links to saved apps.
+Together with the source code you will find the login.txt file that you need to edit with the credentials and the dbManager.py script, used to manually fix wrong links to saved apps. You can also find the editor for the categories.
 
 
 What you need to know  before testing the bot
@@ -18,10 +18,7 @@ If you are on Window$ please consider linux or take your time to edit the cacheF
 Info
 ==================
 
-Here: http://www.reddit.com/r/cris9696/comments/1tf0vr/
-
-Here: http://www.reddit.com/r/cris9696/comments/1rhsyq/
-
+Here: http://www.reddit.com/r/cris9696
 
 
 TODO
