@@ -1,0 +1,7 @@
+I am now rewriting the bot, to make the code better and easier to understand.
+
+
+This is because while developing this bot I learnt much about python and I know that the current code is not representing my current skills.
+
+
+In the new version you will probably see usage of SQLite DBs and a better use of classes. You will also see an overall better code. (That's what I hope!) 
