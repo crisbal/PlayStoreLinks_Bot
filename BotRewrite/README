@@ -5,3 +5,16 @@ This is because while developing this bot I learnt much about python and I know 
 
 
 In the new version you will probably see usage of SQLite DBs and a better use of classes. You will also see an overall better code. (That's what I hope!) 
+
+
+I also included some kind of test, to see if everything is ok. Right now the test if only for a PlayStore search, but in the future I will add more if needed.
+
+
+What NEEDS to be done ASAP:
+*   The database part, to save all the apps already linked to avoid useless searches on the PlayStore
+*   The category thing, to link to a category of apps
+
+What might be done in the futute:
+*   Display if an app has IAP
+
+
