@@ -52,7 +52,7 @@ def isDone(comment):
     #TODO check if in the database
     for reply in comment.replies:
         if reply.author.name == Config.username:
-            logging.debug("Already replied to " + comment.id)
+            logging.debug("Already replied to \"" + comment.id + "\"")
             return True
 
     return False
@@ -65,14 +65,14 @@ def generateComment(linkRequests):
     for linkRequest in linkRequests:    #for each linkme command
         appsToLink = linkRequest.split(",") #split the apps
         for app in appsToLink:
-            if nOfRequestedApps<Config.maxAppsPerComment:
+            app = app.strip()
+            if nOfRequestedApps<Config.maxAppsPerComment and len(app)>0:
                 app = HTMLParser.HTMLParser().unescape(app)  #html encoding to normal encoding 
                 foundApp = findApp(app)
-                foundApp.searchName = app
                 nOfRequestedApps+=1
                 if foundApp:
                     nOfFoundApps+=1
-                    reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ")  -  Price: " + ("Free" if foundApp.free else "Paid") + " - Rating: " + foundApp.rating + "/100 - "
+                    reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - Price: " + ("Free" if foundApp.free else "Paid") + " - Rating: " + foundApp.rating + "/100 - "
                     reply += "Search for \"" + foundApp.searchName + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(foundApp.searchName.encode("utf-8")) + ")\n\n"
                     logging.info("\"" + foundApp.searchName + "\" found. Full Name: " + foundApp.fullName + " - Link: " + foundApp.link)
                 else:
@@ -89,7 +89,6 @@ def generateComment(linkRequests):
 
 
 def findApp(appName):
-    appName = appName.strip()
     logging.debug("Searching for \"" + appName + "\"")
     app = App.App()
     if len(appName)>0:
@@ -139,7 +138,7 @@ def getAppFromCard(card):
     app = App.App()
     app.fullName =  card.find(attrs={"class": "title"}).get("title")
     app.link =  "https://play.google.com" + card.find(attrs={"class": "title"}).get("href")
-    app.price = True if card.find(attrs={"class": "price buy"}).get_text().strip().lower() == "free" else False
+    app.free = True if card.find(attrs={"class": "price buy"}).get_text().strip().lower() == "free" else False
     app.rating = card.find(attrs={"class": "current-rating"})["style"].strip().replace("width: ","")[:2]
     return app
 
@@ -189,7 +188,7 @@ if __name__ == "__main__":
     subreddits = r.get_subreddit("+".join(Config.subreddits))
 
 
-    linkRequestRegex = re.compile("\\blonk[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)", re.M)
+    linkRequestRegex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)", re.M | re.I)
 
     try:
         logging.debug("Getting the comments")
@@ -202,7 +201,6 @@ if __name__ == "__main__":
     
     for comment in comments:
         myReply = ""
-
         comment.body = removeRedditFormatting(comment.body)
 
         linkRequests = linkRequestRegex.findall(comment.body)
