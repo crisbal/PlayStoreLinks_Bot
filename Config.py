@@ -13,8 +13,8 @@ logFile = "bot.log"
 botRunningFile = "botRunning"
 
 #SUBREDDITS
-#subreddits = ["cris9696", "AndroidGaming","AndroidQuestions","Android","AndroidUsers","twitaaa","AndroidApps","AndroidThemes","harley","supermoto","bikebuilders","careerguidance","mentalfloss","nexus7","redditsync","nexus5","tasker","LGG2","androidtechsupport","nexus4","pebble"]
-subreddits = ["cris9696"]
+subreddits = ["cris9696", "AndroidGaming","AndroidQuestions","Android","AndroidUsers","twitaaa","AndroidApps","AndroidThemes","harley","supermoto","bikebuilders","careerguidance","mentalfloss","nexus7","redditsync","nexus5","tasker","LGG2","androidtechsupport","nexus4","pebble"]
+#subreddits = ["cris9696"]
 
 #REPLY
 maxAppsPerComment = 10

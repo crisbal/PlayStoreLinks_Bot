@@ -40,8 +40,8 @@ logging.getLogger('').addHandler(console)
 
 
 def stopBot(removeFile = False):
-    if removeFile:
-        os.remove(Config.botRunningFile)
+    """if removeFile:
+        os.remove(Config.botRunningFile)"""
     sys.exit(0)
 
 
@@ -145,27 +145,31 @@ def getAppFromCard(card):
 def reply(comment,myReply):
     logging.debug("Replying to \"" + comment.id + "\"")
     myReply += Config.closingFormula
-    try:
-        comment.reply(myReply)
-        logging.info("Successfully replied to comment \"" + comment.id + "\"\n")
-    except praw.errors.RateLimitExceeded as timeError:
-        logging.warning("Doing too much, sleeping for " + str(timeError.sleep_time))
-        time.sleep(timeError.sleep_time)
-        stopBot(True)
-    except Exception as e:
-        logging.error("Exception \"" + str(e) + "\" occured while replying to \"" + comment.id + "\"! Shutting down!")
-        stopBot(True)
+    tryAgain = True
+    while tryAgain:
+        tryAgain = False
+        try:
+            comment.reply(myReply)
+            logging.info("Successfully replied to comment \"" + comment.id + "\"\n")
+            break
+        except praw.errors.RateLimitExceeded as timeError:
+            logging.warning("Doing too much, sleeping for " + str(timeError.sleep_time))
+            time.sleep(timeError.sleep_time)
+            tryAgain = True
+        except Exception as e:
+            logging.error("Exception \"" + str(e) + "\" occured while replying to \"" + comment.id + "\"! Shutting down!")
+            stopBot(True)
 
 def addToDB(app):
     pass
 ####### main method #######
 if __name__ == "__main__":
 
-    if os.path.isfile(Config.botRunningFile):
+    """if os.path.isfile(Config.botRunningFile):
             logging.warning("The bot is already running! Shutting down!")
             stopBot()
 
-    open(Config.botRunningFile, "w").close()
+    open(Config.botRunningFile, "w").close()"""
 
 
     logging.debug("Logging in")
