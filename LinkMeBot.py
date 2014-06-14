@@ -79,7 +79,7 @@ def generateComment(linkRequests):
                     reply +="I am sorry, I can't find any app named \"" + app + "\".\n\n"
                     logging.info("Can't find any app named \"" + app + "\"")
 
-    if nOfRequestedApps>=Config.maxAppsPerComment:
+    if nOfRequestedApps>Config.maxAppsPerComment:
         reply = "You requested more than " + str(Config.maxAppsPerComment) + " apps. I will only link to the first " + str(Config.maxAppsPerComment) + " apps.\n\n" + reply
     
     if nOfFoundApps == 0:
