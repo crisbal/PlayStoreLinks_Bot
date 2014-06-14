@@ -1,6 +1,5 @@
 PlayStoreLinks__Bot
 ==================
-
 A Reddit bot that links to Android Apps from the Play Store when a user asks to do it.
 
 
@@ -25,16 +24,23 @@ The bot uses the following extra libraries avaible to install via pip:
 * requests, to get web pages
 
 You need to set a valid username and password in the config file
+Also in the config file you need to set the subreddits where the bot searches for comments
+
+How to use it
+==================
+On the server I use the bot is set to run every two minutes using a cronjob
+If you want to test the code I suggest you to post a comment in a subreddit and then run the bot
 
 
 Info / Reddit-related questions / See the bot in action
 ==================
 http://www.reddit.com/r/cris9696
 
+Feel free to make any post you want to test it.
+
 
 TODO
 ==================
-
 A database where I save the apps already searched to avoid as many web requests to the play store as possible
 
 
