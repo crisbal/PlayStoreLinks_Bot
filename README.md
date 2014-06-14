@@ -1,4 +1,4 @@
-##PlayStoreLinks__Bot
+##[PlayStoreLinks__Bot](http://www.reddit.com/u/PlayStoreLinks__Bot)
 
 
 A Reddit bot that links to Android Apps from the Play Store when a user asks to do it.
@@ -47,13 +47,13 @@ A database where I save the apps already searched to avoid as many web requests 
 
 ####Want to help or want help?
 
-*If you want to help please feel free to do it.
+* If you want to help please feel free to do it.
 
-*If you need help please fell free to ask me.
+* If you need help please fell free to ask me.
 
-*If you find any bug or exploit please tell me: I will try to fix them or if you want you can fix them and I will include your changes in the project
-
-*If you find a way to improve the bot please share it with everybody.
+* If you find any bug or exploit please tell me: I will try to fix them or if you want you can fix them and I will include your changes in the project
+Subimited linkme request with 10 apps and bot thinks that i requested more than 10 apps
+* If you find a way to improve the bot please share it with everybody.
 
 ####LICENSE
 
