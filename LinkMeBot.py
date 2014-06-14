@@ -9,7 +9,6 @@ General workflow:
 *get comments
 *reply
 *shutdown
-
 """
 
 #general
@@ -66,19 +65,20 @@ def generateComment(linkRequests):
         appsToLink = linkRequest.split(",") #split the apps
         for app in appsToLink:
             app = app.strip()
-            if nOfRequestedApps<Config.maxAppsPerComment and len(app)>0:
+            if len(app)>0:
                 app = HTMLParser.HTMLParser().unescape(app)  #html encoding to normal encoding 
-                foundApp = findApp(app)
                 nOfRequestedApps+=1
-                if foundApp:
-                    nOfFoundApps+=1
-                    reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - Price: " + ("Free" if foundApp.free else "Paid") + " - Rating: " + foundApp.rating + "/100 - "
-                    reply += "Search for \"" + foundApp.searchName + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(foundApp.searchName.encode("utf-8")) + ")\n\n"
-                    logging.info("\"" + foundApp.searchName + "\" found. Full Name: " + foundApp.fullName + " - Link: " + foundApp.link)
-                else:
-                    reply +="I am sorry, I can't find any app named \"" + app + "\".\n\n"
-                    logging.info("Can't find any app named \"" + app + "\"")
-
+                if nOfRequestedApps<=Config.maxAppsPerComment:
+                    foundApp = findApp(app)
+                    if foundApp:
+                        nOfFoundApps+=1
+                        reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - Price: " + ("Free" if foundApp.free else "Paid") + " - Rating: " + foundApp.rating + "/100 - "
+                        reply += "Search for \"" + foundApp.searchName + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(foundApp.searchName.encode("utf-8")) + ")\n\n"
+                        logging.info("\"" + foundApp.searchName + "\" found. Full Name: " + foundApp.fullName + " - Link: " + foundApp.link)
+                    else:
+                        reply +="I am sorry, I can't find any app named \"" + app + "\".\n\n"
+                        logging.info("Can't find any app named \"" + app + "\"")
+                    print(nOfRequestedApps)
     if nOfRequestedApps>Config.maxAppsPerComment:
         reply = "You requested more than " + str(Config.maxAppsPerComment) + " apps. I will only link to the first " + str(Config.maxAppsPerComment) + " apps.\n\n" + reply
     
