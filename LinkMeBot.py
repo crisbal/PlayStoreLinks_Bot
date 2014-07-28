@@ -65,20 +65,20 @@ def generateComment(linkRequests):
         appsToLink = linkRequest.split(",") #split the apps
         for app in appsToLink:
             app = app.strip()
-            if len(app)>0:
+            if len(app) > 0:
                 app = HTMLParser.HTMLParser().unescape(app)  #html encoding to normal encoding 
-                nOfRequestedApps+=1
-                if nOfRequestedApps<=Config.maxAppsPerComment:
+                nOfRequestedApps += 1
+                if nOfRequestedApps <= Config.maxAppsPerComment:
                     foundApp = findApp(app)
                     if foundApp:
-                        nOfFoundApps+=1
+                        nOfFoundApps += 1
                         reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - Price: " + ("Free" if foundApp.free else "Paid") + " - Rating: " + foundApp.rating + "/100 - "
                         reply += "Search for \"" + foundApp.searchName + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(foundApp.searchName.encode("utf-8")) + ")\n\n"
                         logging.info("\"" + foundApp.searchName + "\" found. Full Name: " + foundApp.fullName + " - Link: " + foundApp.link)
                     else:
                         reply +="I am sorry, I can't find any app named \"" + app + "\".\n\n"
                         logging.info("Can't find any app named \"" + app + "\"")
-    if nOfRequestedApps>Config.maxAppsPerComment:
+    if nOfRequestedApps > Config.maxAppsPerComment:
         reply = "You requested more than " + str(Config.maxAppsPerComment) + " apps. I will only link to the first " + str(Config.maxAppsPerComment) + " apps.\n\n" + reply
     
     if nOfFoundApps == 0:
@@ -103,32 +103,29 @@ def searchInDatabase(appName):
     logging.debug("TODO: Searching in database for " + appName)
     return None
 
+def parseResultsPage(resultsHtml):
+    page = BeautifulSoup(resultsHtml)
+    cards = page.findAll(attrs={"class": "card"})
+    if len(cards) > 0:
+        app = getAppFromCard(cards[0])
+        if app:
+            app.searchName = appName
+            addToDB(app)
+        return app
+    else:
+        return None
+
 def searchOnPlayStore(appName):
     appNameNoUnicode = appName.encode('utf-8') #to utf-8 because quote_plus don't like unicode!
-    appNameForSeachUrl = urllib.quote_plus(appNameNoUnicode)
+    encodedName = urllib.quote_plus(appNameNoUnicode)
     try:
-        request = requests.get("http://play.google.com/store/search?q=\"" + appNameForSeachUrl + "\"&c=apps&hl=en")
-        page = BeautifulSoup(request.text)
-        cards = page.findAll(attrs={"class": "card"})
-        if len(cards) > 0:
-            app = getAppFromCard(cards[0])
-            if app:
-                app.searchName = appName
-                addToDB(app)
-            
-            return app
-        else:
-            request = requests.get("http://play.google.com/store/search?q=" + appNameForSeachUrl + "&c=apps&hl=en")
-            page = BeautifulSoup(request.text)
-            cards = page.findAll(attrs={"class": "card"})
-            if len(cards) > 0:
-                app = getAppFromCard(cards[0])
-                if app:
-                    app.searchName = appName
-                    addToDB(app)
-                return app
-            else:
-                return None
+        request = requests.get("http://play.google.com/store/search?q=\"" + encodedName + "\"&c=apps&hl=en")
+        app = parseResultsPage(request)
+
+        if app == None:
+            request = requests.get("http://play.google.com/store/search?q=" + encodedName + "&c=apps&hl=en")
+            return request
+
     except Exception as e:
         logging.error("Exception \"" + str(e) + "\" occured while searching on the Play Store! Shutting down!")
         stopBot(True)
