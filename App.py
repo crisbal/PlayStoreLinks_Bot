@@ -2,7 +2,7 @@ class App():
     fullName = None
     link = None
     searchName = None
-    rating = None
+    rating = 0
     free = False
 
     def __init__(self):
