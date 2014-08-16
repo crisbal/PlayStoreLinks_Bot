@@ -119,18 +119,18 @@ def parseResultsPage(request,appName):
 def searchOnPlayStore(appName):
     appNameNoUnicode = appName.encode('utf-8') #to utf-8 because quote_plus don't like unicode!
     encodedName = urllib.quote_plus(appNameNoUnicode)
-    #try:
-    request = requests.get("http://play.google.com/store/search?q=\"" + encodedName + "\"&c=apps&hl=en")
-    app = parseResultsPage(request,appName)
-
-    if app == None:
-        request = requests.get("http://play.google.com/store/search?q=" + encodedName + "&c=apps&hl=en")
+    try:
+        request = requests.get("http://play.google.com/store/search?q=\"" + encodedName + "\"&c=apps&hl=en")
         app = parseResultsPage(request,appName)
-    
-    return app
-    """except Exception as e:
+
+        if app == None:
+            request = requests.get("http://play.google.com/store/search?q=" + encodedName + "&c=apps&hl=en")
+            app = parseResultsPage(request,appName)
+        
+        return app
+    except Exception as e:
         logging.error("Exception \"" + str(e) + "\" occured while searching on the Play Store! Shutting down!")
-        stopBot(True)"""
+        stopBot(True)
 
 def getAppFromCard(card):
     app = App.App()
