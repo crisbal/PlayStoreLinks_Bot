@@ -45,7 +45,7 @@ def stopBot(removeFile = False):
 
 
 def removeRedditFormatting(text):
-    return text.replace("*", "").replace("~", "").replace("^", "").replace(">","")
+    return text.replace("*", "").replace("~", "").replace("^", "").replace(">","").replace("[","").replace("]","")
 
 def isDone(comment):
     #TODO check if in the database
@@ -78,6 +78,7 @@ def generateComment(linkRequests):
                     else:
                         reply +="I am sorry, I can't find any app named \"" + app + "\".\n\n"
                         logging.info("Can't find any app named \"" + app + "\"")
+                        
     if nOfRequestedApps > Config.maxAppsPerComment:
         reply = "You requested more than " + str(Config.maxAppsPerComment) + " apps. I will only link to the first " + str(Config.maxAppsPerComment) + " apps.\n\n" + reply
     
