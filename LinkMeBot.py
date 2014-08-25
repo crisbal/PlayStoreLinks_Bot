@@ -24,9 +24,13 @@ import HTMLParser
 from bs4 import BeautifulSoup
 import requests
 
+
+#DB
+from peewee import fn
 #mine
 import Config
-import App
+from App import App
+from AppDB import AppDB
 
 #setting up the logger
 
@@ -73,8 +77,8 @@ def generateComment(linkRequests):
                     if foundApp:
                         nOfFoundApps += 1
                         reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - Price: " + ("Free" if foundApp.free else "Paid") + " - Rating: " + foundApp.rating + "/100 - "
-                        reply += "Search for \"" + foundApp.searchName + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(foundApp.searchName.encode("utf-8")) + ")\n\n"
-                        logging.info("\"" + foundApp.searchName + "\" found. Full Name: " + foundApp.fullName + " - Link: " + foundApp.link)
+                        reply += "Search for \"" + app + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(foundApp.searchName.encode("utf-8")) + ")\n\n"
+                        logging.info("\"" + app + "\" found. Full Name: " + foundApp.fullName + " - Link: " + foundApp.link)
                     else:
                         reply +="I am sorry, I can't find any app named \"" + app + "\".\n\n"
                         logging.info("Can't find any app named \"" + app + "\"")
@@ -90,7 +94,8 @@ def generateComment(linkRequests):
 
 def findApp(appName):
     logging.debug("Searching for \"" + appName + "\"")
-    app = App.App()
+    appName = appName.lower()
+    app = None
     if len(appName)>0:
         app = searchInDatabase(appName)
         if app:
@@ -101,8 +106,14 @@ def findApp(appName):
         return None
 
 def searchInDatabase(appName):
-    logging.debug("TODO: Searching in database for " + appName)
-    return None
+    logging.debug("Searching in database for '" + appName + "'")
+    try:
+        appDB = AppDB.select().where((fn.Lower(AppDB.fullName) == appName) | (fn.Lower(AppDB.searchName) == appName)).get()
+    except AppDB.DoesNotExist:
+        logging.debug("'" + appName + "' NOT found in the DB")
+        return None
+    logging.info("'" + appName + "' found in the DB")
+    return appDB
 
 def parseResultsPage(request,appName):
     page = BeautifulSoup(request.text)
@@ -119,24 +130,26 @@ def parseResultsPage(request,appName):
 def searchOnPlayStore(appName):
     appNameNoUnicode = appName.encode('utf-8') #to utf-8 because quote_plus don't like unicode!
     encodedName = urllib.quote_plus(appNameNoUnicode)
-    #try:
-    request = requests.get("http://play.google.com/store/search?q=\"" + encodedName + "\"&c=apps&hl=en")
-    app = parseResultsPage(request,appName)
-
-    if app == None:
-        request = requests.get("http://play.google.com/store/search?q=" + encodedName + "&c=apps&hl=en")
+    try:
+        request = requests.get("http://play.google.com/store/search?q=\"" + encodedName + "\"&c=apps&hl=en")
         app = parseResultsPage(request,appName)
-    
-    return app
-    """except Exception as e:
+
+        if app == None:
+            request = requests.get("http://play.google.com/store/search?q=" + encodedName + "&c=apps&hl=en")
+            app = parseResultsPage(request,appName)
+        
+        logging.info("'" + appName + "' found on the PlayStore")
+        return app
+    except Exception as e:
         logging.error("Exception \"" + str(e) + "\" occured while searching on the Play Store! Shutting down!")
-        stopBot(True)"""
+        stopBot(True)
 
 def getAppFromCard(card):
-    app = App.App()
+    app = App()
     app.fullName =  card.find(attrs={"class": "title"}).get("title")
     app.link =  "https://play.google.com" + card.find(attrs={"class": "title"}).get("href")
-    app.free = True if card.find(attrs={"class": "price buy"}).get_text().strip().lower() == "" else False
+    price = card.find(attrs={"class": "price buy"}).get_text().strip().lower()
+    app.free = True if price == "" or price == "free" else False
     app.rating = card.find(attrs={"class": "current-rating"})["style"].strip().replace("width: ","").replace("%","")[:3].replace(".","")
     return app
 
@@ -159,7 +172,13 @@ def reply(comment,myReply):
             stopBot(True)
 
 def addToDB(app):
-    pass
+    appDB = AppDB()
+    appDB.fullName = app.fullName
+    appDB.link = app.link
+    appDB.rating = app.rating
+    appDB.free = app.free
+    appDB.searchName = app.searchName
+    appDB.save()
 ####### main method #######
 if __name__ == "__main__":
 
@@ -190,7 +209,7 @@ if __name__ == "__main__":
     subreddits = r.get_subreddit("+".join(Config.subreddits))
 
 
-    linkRequestRegex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)", re.M | re.I)
+    linkRequestRegex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|$)", re.M | re.I)
 
     try:
         logging.debug("Getting the comments")

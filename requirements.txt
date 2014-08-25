@@ -1,0 +1,7 @@
+beautifulsoup4==4.3.2
+peewee==2.3.1
+praw==2.1.18
+requests==2.3.0
+six==1.7.3
+update-checker==0.10
+wsgiref==0.1.2
