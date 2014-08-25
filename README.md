@@ -8,8 +8,11 @@ A Reddit bot that links to Android Apps from the Play Store when a user asks to 
 
 * LinkMeBot.py, the main program
 * App.py, a class that the bot uses to save data
+* AppDB.py, a class used to save data to the database
 * Config.py, a simple and easy to understand configuration file
 * Test.py, a simple test to see if the Play Store parsing works.
+* setup.py, something you need to run before running the bot the first time / applying updates
+* requirements.txt, the pip modules you need to install to run the bot
 * LICENSE, the license that this project is released under (MIT)
 * README, this file
 
@@ -18,11 +21,7 @@ A Reddit bot that links to Android Apps from the Play Store when a user asks to 
 
 The bot was written on a Linux-Fedora machine with Python 2.7.5
 
-The bot uses the following extra libraries avaible to install via pip:
-
-* praw, to interface with reddit
-* BeautifulSoup, to parse HTML
-* requests, to get web pages
+See required packages in requirements.txt
 
 You need to set a valid username and password in the config file
 Also in the config file you need to set the subreddits where the bot searches for comments
@@ -42,7 +41,7 @@ Feel free to make any post you want to test it.
 
 ####TODO
 
-A database where I save the apps already searched to avoid as many web requests to the play store as possible
+IAP, Description, Price(?), Version(?)
 
 
 ####Want to help or want help?
