@@ -237,9 +237,5 @@ if __name__ == "__main__":
                     logging.info("No apps found for comment \"" + comment.id + "\"\n\n")
                 
     logging.debug("Shutting down")
-
-
-
-
+    
     stopBot(True)
-
