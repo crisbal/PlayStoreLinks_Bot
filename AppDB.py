@@ -5,7 +5,7 @@ db = SqliteDatabase('LinkMeBot.db')
 
 class AppDB(Model):
     fullName = CharField()
-    link = CharField(unique=True)
+    link = CharField()
     searchName = CharField()
     rating = CharField()
     free = BooleanField()

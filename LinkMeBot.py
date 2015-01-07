@@ -148,7 +148,7 @@ def getAppFromCard(card):
     app = App()
     app.fullName =  card.find(attrs={"class": "title"}).get("title")
     app.link =  "https://play.google.com" + card.find(attrs={"class": "title"}).get("href")
-    price = card.find(attrs={"class": "price buy"}).get_text().strip().lower()
+    price = card.find(attrs={"class": "display-price"}).get_text().strip().lower()
     app.free = True if price == "" or price == "free" else False
     app.rating = card.find(attrs={"class": "current-rating"})["style"].strip().replace("width: ","").replace("%","")[:3].replace(".","")
     return app
