@@ -112,8 +112,9 @@ def searchInDatabase(appName):
     except AppDB.DoesNotExist:
         logging.debug("'" + appName + "' NOT found in the DB")
         return None
-    logging.info("'" + appName + "' found in the DB")
-    return appDB
+    #logging.info("'" + appName + "' found in the DB")
+    #return appDB
+    return None
 
 def parseResultsPage(request,appName):
     page = BeautifulSoup(request.text)
