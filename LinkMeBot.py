@@ -97,11 +97,11 @@ def findApp(appName):
     appName = appName.lower()
     app = None
     if len(appName)>0:
-        app = searchInDatabase(appName)
-        if app:
-            return app
-        else:
-            return searchOnPlayStore(appName)
+       #app = searchInDatabase(appName)
+       #if app:
+       #     return app
+       # else:
+       return searchOnPlayStore(appName)
     else:
         return None
 
@@ -123,7 +123,7 @@ def parseResultsPage(request,appName):
         app = getAppFromCard(cards[0])
         if app:
             app.searchName = appName
-            addToDB(app)
+            #addToDB(app)
         return app
     else:
         return None
