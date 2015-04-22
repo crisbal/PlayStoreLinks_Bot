@@ -76,7 +76,7 @@ def generateComment(linkRequests):
                     foundApp = findApp(app)
                     if foundApp:
                         nOfFoundApps += 1
-                        reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - Price: " + ("Free" if foundApp.free else "Paid") + " - Rating: " + foundApp.rating + "/100 - "
+                        reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - " + ("Free" if foundApp.free else "Paid") + " - Rating: " + foundApp.rating + "/100 - "
                         reply += "Search for \"" + app + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(foundApp.searchName.encode("utf-8")) + ")\n\n"
                         logging.info("\"" + app + "\" found. Full Name: " + foundApp.fullName + " - Link: " + foundApp.link)
                     else:
