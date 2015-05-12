@@ -41,7 +41,7 @@ Feel free to make any post you want to test it.
 
 ####TODO
 
-IAP, Description, Price(?), Version(?)
+IAP, Autodelete
 
 
 ####Want to help or want help?
