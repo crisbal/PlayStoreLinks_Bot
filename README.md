@@ -29,19 +29,20 @@ Also in the config file you need to set the subreddits where the bot searches fo
 ####How to use it
 
 On the server I use the bot is set to run every two minutes using a cronjob
-If you want to test the code I suggest you to post a comment in a subreddit and then run the bot
+If you want to test the code I suggest you to post a comment in a subreddit and then run the bot, after configuring it.
 
 
 ####Info / Reddit-related questions / See the bot in action
 
 http://www.reddit.com/r/cris9696
 
-Feel free to make any post you want to test it.
+Feel free to make a new post if  you want to test the bot, or just use an existing one.
 
 
 ####TODO
 
-IAP, Autodelete
+* Autodelete
+* Better Code (Separate module for Play Store stuff)
 
 
 ####Want to help or want help?
@@ -50,9 +51,8 @@ IAP, Autodelete
 
 * If you need help please fell free to ask me.
 
-* If you find any bug or exploit please tell me: I will try to fix them or if you want you can fix them and I will include your changes in the project
-Subimited linkme request with 10 apps and bot thinks that i requested more than 10 apps
-* If you find a way to improve the bot please share it with everybody.
+* If you find any bug or exploit please tell me: I will try to fix them or if you want you can fix them and I will include your changes in the project.
+* If you find a way to improve the bot, please share it with everybody.
 
 ####LICENSE
 
