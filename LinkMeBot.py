@@ -32,16 +32,6 @@ import Config
 from App import App
 from AppDB import AppDB
 
-#setting up the logger
-
-logging.basicConfig(filename=Config.logFile,level=Config.loggingLevel,format='%(levelname)-8s %(message)s')
-
-console = logging.StreamHandler()
-console.setLevel(Config.loggingLevel)
-console.setFormatter(logging.Formatter('%(asctime)s %(levelname)-8s %(message)s'))
-logging.getLogger('').addHandler(console)
-
-
 def stopBot(removeFile = False):
     """if removeFile:
         os.remove(Config.botRunningFile)"""
@@ -54,7 +44,7 @@ def removeRedditFormatting(text):
 def isDone(comment):
     #TODO check if in the database
     for reply in comment.replies:
-        if reply.author.name == Config.username:
+        if reply.author.name.lower() == Config.username.lower():
             logging.debug("Already replied to \"" + comment.id + "\"")
             return True
 
@@ -76,7 +66,7 @@ def generateComment(linkRequests):
                     foundApp = findApp(app)
                     if foundApp:
                         nOfFoundApps += 1
-                        reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - " + ("Free" if foundApp.free else "Paid") + " - Rating: " + foundApp.rating + "/100 - "
+                        reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - " + ("Free" if foundApp.free else "Paid") + " " + (" with IAP -" if foundApp.IAP else " - ") + " Rating: " + foundApp.rating + "/100 - "
                         reply += "Search for \"" + app + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(foundApp.searchName.encode("utf-8")) + ")\n\n"
                         logging.info("\"" + app + "\" found. Full Name: " + foundApp.fullName + " - Link: " + foundApp.link)
                     else:
@@ -155,6 +145,15 @@ def getAppFromCard(card):
     else:
         app.free = True
     app.rating = card.find(attrs={"class": "current-rating"})["style"].strip().replace("width: ","").replace("%","")[:3].replace(".","")
+    
+    appPage = requests.get(app.link)
+    page = BeautifulSoup(appPage.text)
+    iapElements = page.findAll(attrs={"class": "inapp-msg"})
+    if len(iapElements) > 0:
+        app.IAP = True
+    else:
+        app.IAP = False
+
     return app
 
 def reply(comment,myReply):
@@ -183,8 +182,18 @@ def addToDB(app):
     appDB.free = app.free
     appDB.searchName = app.searchName
     appDB.save()
+
+
 ####### main method #######
 if __name__ == "__main__":
+
+    #setting up the logger
+    logging.basicConfig(filename=Config.logFile,level=Config.loggingLevel,format='%(levelname)-8s %(message)s')
+
+    console = logging.StreamHandler()
+    console.setLevel(Config.loggingLevel)
+    console.setFormatter(logging.Formatter('%(asctime)s %(levelname)-8s %(message)s'))
+    logging.getLogger('').addHandler(console)
 
     """if os.path.isfile(Config.botRunningFile):
             logging.warning("The bot is already running! Shutting down!")
