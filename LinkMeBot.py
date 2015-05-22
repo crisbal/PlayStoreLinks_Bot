@@ -17,6 +17,7 @@ import logging
 import os
 import sys
 import re
+import cPickle as pickle
 
 #web
 import urllib
@@ -31,10 +32,18 @@ from peewee import fn
 import Config
 from App import App
 from AppDB import AppDB
+from pprint import pprint
 
+
+try:
+    alreadyDone = pickle.load( open( "done.p", "rb" ) )
+except IOError:
+    alreadyDone = []
+    
 def stopBot(removeFile = False):
     """if removeFile:
         os.remove(Config.botRunningFile)"""
+    pickle.dump( alreadyDone, open( "done.p", "wb" ) )
     sys.exit(0)
 
 
@@ -43,11 +52,11 @@ def removeRedditFormatting(text):
 
 def isDone(comment):
     #TODO check if in the database
-    for reply in comment.replies:
-        if reply.author.name.lower() == Config.username.lower():
-            logging.debug("Already replied to \"" + comment.id + "\"")
-            return True
+    if comment.id in alreadyDone:
+        logging.debug("Already replied to \"" + comment.id + "\"")
+        return True
 
+    alreadyDone.append(comment.id)
     return False
 
 
@@ -232,7 +241,6 @@ if __name__ == "__main__":
         logging.error("Exception \"" + str(e) + "\" occured while getting comments! Shutting down!")
         stopBot(True)
 
-    
     for comment in comments:
         myReply = ""
         body = removeRedditFormatting(comment.body)
@@ -248,7 +256,6 @@ if __name__ == "__main__":
                     reply(comment,myReply)
                 else:
                     logging.info("No apps found for comment \"" + comment.id + "\"\n\n")
-                
+
     logging.debug("Shutting down")
-    
     stopBot(True)
