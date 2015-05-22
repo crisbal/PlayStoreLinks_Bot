@@ -1,7 +1,7 @@
 """
 /u/PlayStoreLinks__Bot
 
-A bot made by /u/cris9696
+A Reddit Bot made by /u/cris9696 
 
 General workflow:
 
@@ -10,185 +10,191 @@ General workflow:
 * analyze comments
 * reply to valid comments
 * shutdown
+
+
 """
 
-#general
+#reddit
 import praw
-import logging
-import os
+#general
 import sys
 import re
 import cPickle as pickle
-
 #web
 import urllib
 import HTMLParser
-
 #mine
 import Config
-
 from PlayStore import PlayStore
 
-try:
-    alreadyDone = pickle.load( open( "done.p", "rb" ) )
-except IOError:
-    alreadyDone = []
-    
-def stopBot(removeFile = False):
-    """if removeFile:
-        os.remove(Config.botRunningFile)"""
-    pickle.dump( alreadyDone, open( "done.p", "wb" ) )
-    sys.exit(0)
 
+def stopBot():
+    logger.info("Shutting down")
+    logger.debug("Dumping already_done")
+    pickle.dump( already_done, open( "done.p", "wb" ) )
+    logger.debug("Really shutting down")
+    sys.exit(0)
 
 def removeRedditFormatting(text):
     return text.replace("*", "").replace("~", "").replace("^", "").replace(">","").replace("[","").replace("]","").replace("(","").replace(")","")
 
+
 def isDone(comment):
     #TODO check if in the database
-    if comment.id in alreadyDone:
-        logger.debug("Already replied to \"" + comment.id + "\"")
+    if comment.id in already_done:
+        logger.debug("Already replied to '" + comment.id + "'")
         return True
 
-    alreadyDone.append(comment.id)
+    already_done.append(comment.id)
     return False
 
+def generateReply(link_me_requests):
+    my_reply = ""
 
-def generateComment(linkRequests):
-    reply = ""
     nOfRequestedApps = 0
     nOfFoundApps = 0
-    for linkRequest in linkRequests:    #for each linkme command
-        appsToLink = linkRequest.split(",") #split the apps
-        for app_name in appsToLink:
+    for link_me_request in link_me_requests:    #for each linkme command
+        requested_apps = link_me_request.split(",") #split the apps by ,
+
+        for app_name in requested_apps:
             app_name = app_name.strip()
+
             if len(app_name) > 0:
                 app_name = HTMLParser.HTMLParser().unescape(app_name)  #html encoding to normal encoding 
                 nOfRequestedApps += 1
+                
                 if nOfRequestedApps <= Config.maxAppsPerComment:
-                    foundApp = findApp(app_name)
-                    if foundApp:
+                    app = findApp(app_name)
+
+                    if app:
                         nOfFoundApps += 1
-                        reply += "[**" + foundApp.name + "**](" + foundApp.link + ") - " + ("Free" if foundApp.free else "Paid") + " " + (" with IAP -" if foundApp.IAP else " - ") + " Rating: " + foundApp.rating + "/100 - "
-                        reply += "Search for \"" + app_name + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(app_name.encode("utf-8")) + ")\n\n"
-                        logger.info("\"" + app_name + "\" found. Full Name: " + foundApp.name + " - Link: " + foundApp.link)
+                        my_reply += "[**" + app.name + "**](" + app.link + ") - " + ("Free" if app.free else "Paid") + " " + (" with IAP -" if app.IAP else " - ") + " Rating: " + app.rating + "/100 - "
+                        my_reply += "Search for '" + app_name + "' on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(app_name.encode("utf-8")) + ")\n\n"
+                        
+                        logger.info("'" + app_name + "' found. Name: " + app.name)
                     else:
-                        reply +="I am sorry, I can't find any app named \"" + app_name + "\".\n\n"
-                        logger.info("Can't find any app named \"" + app_name + "\"")
+                        my_reply +="I am sorry, I can't find any app named '" + app_name + "'.\n\n"
+                        logger.info("Can't find any app named '" + app_name + "'")
 
     if nOfRequestedApps > Config.maxAppsPerComment:
-        reply = "You requested more than " + str(Config.maxAppsPerComment) + " apps. I will only link to the first " + str(Config.maxAppsPerComment) + " apps.\n\n" + reply
+        my_reply = "You requested more than " + str(Config.maxAppsPerComment) + " apps. I will only link to the first " + str(Config.maxAppsPerComment) + " apps.\n\n" + my_reply
     
-    if nOfFoundApps == 0:
-        reply = None
+    my_reply += Config.closingFormula
 
-    return reply
+    if nOfFoundApps == 0:   #return None because we don't want to answer
+        my_reply = None
+
+    return my_reply
 
 
-def findApp(appName):
-    logger.debug("Searching for \"" + appName + "\"")
-    appName = appName.lower()
+def findApp(app_name):
+    logger.debug("Searching for '" + app_name + "'")
+    app_name = app_name.lower()
     app = None
-    if len(appName)>0:
-        #app = searchInDatabase(appName)
+
+    if len(app_name)>0:
+        #app = searchInDatabase(app_name)
         #if app:
         #     return app
         # else:
         try:
-            app = PlayStore.search(appName)
+            app = PlayStore.search(app_name)
             return app
         except PlayStore.AppNotFoundException as e:
             return None 
     else:
         return None
 
-def reply(comment,myReply):
-    logger.debug("Replying to \"" + comment.id + "\"")
-    myReply += Config.closingFormula
+def doReply(comment,myReply):
+    logger.debug("Replying to '" + comment.id + "'")
+    
     tryAgain = True
     while tryAgain:
         tryAgain = False
         try:
+            # "#&#009;\n\n###&#009;\n\n#####&#009;\n"
             comment.reply(myReply)
-            logger.info("Successfully replied to comment \"" + comment.id + "\"\n")
+            logger.info("Successfully replied to comment '" + comment.id + "'\n")
             break
         except praw.errors.RateLimitExceeded as timeError:
             logger.warning("Doing too much, sleeping for " + str(timeError.sleep_time))
             time.sleep(timeError.sleep_time)
             tryAgain = True
         except Exception as e:
-            logger.error("Exception \"" + str(e) + "\" occured while replying to \"" + comment.id + "\"! Shutting down!")
-            stopBot(True)
-
-
-
-####### main method #######
-if __name__ == "__main__":
-
-    logger = logging.getLogger('LinkMeBot')
-    logger.setLevel(Config.loggingLevel)
-    fh = logging.FileHandler(Config.logFile)
-    fh.setLevel(Config.loggingLevel)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-
-    """if os.path.isfile(Config.botRunningFile):
-            logger.warning("The bot is already running! Shutting down!")
+            logger.error("Exception '" + str(e) + "' occured while replying to '" + comment.id + "'!")
             stopBot()
 
-    open(Config.botRunningFile, "w").close()"""
 
+#building the logger
+import logging
+logger = logging.getLogger('LinkMeBot')
+logger.setLevel(Config.loggingLevel)
+fh = logging.FileHandler(Config.logFile)
+fh.setLevel(Config.loggingLevel)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+logger.addHandler(fh)
+logger.addHandler(ch)
+
+#main method
+if __name__ == "__main__":
+
+    logger.info("Starting up")
+
+    logger.debug("Loading already_done")
+    try:
+        already_done = pickle.load( open( "done.p", "rb" ) )
+    except IOError:
+        already_done = []
+    
 
     logger.debug("Logging in")
+
+
     try:
-        r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696")
+        r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696 V2.0")
         r.login(Config.username, Config.password)
-        logger.debug("Successfully logged in")
+        logger.info("Successfully logged in")
 
     except praw.errors.RateLimitExceeded as error:
-        logger.error("The bot is doing too much! Sleeping for " + str(error.sleep_time) + " and then shutting down!")
+        logger.error("The Bot is doing too much! Sleeping for " + str(error.sleep_time) + " and then shutting down!")
         time.sleep(error.sleep_time)
-        stopBot(True)
+        stopBot()
 
     except Exception as e:
-        logger.error("Exception \"" + str(e) + "\" occured on login! Shutting down!")
-        stopBot(True)
-
+        logger.error("Exception '" + str(e) + "' occured on login!")
+        stopBot()
 
 
     subreddits = r.get_subreddit("+".join(Config.subreddits))
 
-
-    linkRequestRegex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|$)", re.M | re.I)
+    link_me_regex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
 
     try:
         logger.debug("Getting the comments")
         comments = subreddits.get_comments()
-        logger.debug("Comments successfully loaded")
+        logger.info("Comments successfully downloaded")
     except Exception as e:
-        logger.error("Exception \"" + str(e) + "\" occured while getting comments! Shutting down!")
-        stopBot(True)
+        logger.error("Exception '" + str(e) + "' occured while getting comments!")
+        stopBot()
 
     for comment in comments:
-        myReply = ""
-        body = removeRedditFormatting(comment.body)
 
-        linkRequests = linkRequestRegex.findall(body)
+        #to avoid injection of stuff
+        clean_comment = removeRedditFormatting(comment.body)
 
-        if len(linkRequests) > 0:
-            if not isDone(comment):
-                logger.info("Generating reply to \"" + comment.id + "\"")
-                myReply = generateComment(linkRequests)
-                
-                if myReply is not None:
-                    reply(comment,myReply)
+        #match the request
+        link_me_requests = link_me_regex.findall(clean_comment)
+        #if it matches
+        if len(link_me_requests) > 0:
+            if not isDone(comment): #we check if we have not already answered to the comment
+                logger.debug("Generating reply to '" + comment.id + "'")
+                reply = generateReply(link_me_requests)
+                if reply is not None:
+                    doReply(comment,reply)
                 else:
-                    logger.info("No apps found for comment \"" + comment.id + "\"\n\n")
-
-    logger.debug("Shutting down")
-    stopBot(True)
+                    logger.info("No Apps found for comment '" + comment.id + "'. Ignoring reply.")
+    stopBot()
