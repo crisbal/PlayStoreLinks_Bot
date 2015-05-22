@@ -5,10 +5,11 @@ A bot made by /u/cris9696
 
 General workflow:
 
-*login
-*get comments
-*reply
-*shutdown
+* login
+* get comments
+* analyze comments
+* reply to valid comments
+* shutdown
 """
 
 #general
@@ -22,18 +23,11 @@ import cPickle as pickle
 #web
 import urllib
 import HTMLParser
-from bs4 import BeautifulSoup
-import requests
 
-
-#DB
-from peewee import fn
 #mine
 import Config
-from App import App
-from AppDB import AppDB
-from pprint import pprint
 
+from PlayStore import PlayStore
 
 try:
     alreadyDone = pickle.load( open( "done.p", "rb" ) )
@@ -53,7 +47,7 @@ def removeRedditFormatting(text):
 def isDone(comment):
     #TODO check if in the database
     if comment.id in alreadyDone:
-        logging.debug("Already replied to \"" + comment.id + "\"")
+        logger.debug("Already replied to \"" + comment.id + "\"")
         return True
 
     alreadyDone.append(comment.id)
@@ -66,21 +60,21 @@ def generateComment(linkRequests):
     nOfFoundApps = 0
     for linkRequest in linkRequests:    #for each linkme command
         appsToLink = linkRequest.split(",") #split the apps
-        for app in appsToLink:
-            app = app.strip()
-            if len(app) > 0:
-                app = HTMLParser.HTMLParser().unescape(app)  #html encoding to normal encoding 
+        for app_name in appsToLink:
+            app_name = app_name.strip()
+            if len(app_name) > 0:
+                app_name = HTMLParser.HTMLParser().unescape(app_name)  #html encoding to normal encoding 
                 nOfRequestedApps += 1
                 if nOfRequestedApps <= Config.maxAppsPerComment:
-                    foundApp = findApp(app)
+                    foundApp = findApp(app_name)
                     if foundApp:
                         nOfFoundApps += 1
-                        reply += "[**" + foundApp.fullName + "**](" + foundApp.link + ") - " + ("Free" if foundApp.free else "Paid") + " " + (" with IAP -" if foundApp.IAP else " - ") + " Rating: " + foundApp.rating + "/100 - "
-                        reply += "Search for \"" + app + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(foundApp.searchName.encode("utf-8")) + ")\n\n"
-                        logging.info("\"" + app + "\" found. Full Name: " + foundApp.fullName + " - Link: " + foundApp.link)
+                        reply += "[**" + foundApp.name + "**](" + foundApp.link + ") - " + ("Free" if foundApp.free else "Paid") + " " + (" with IAP -" if foundApp.IAP else " - ") + " Rating: " + foundApp.rating + "/100 - "
+                        reply += "Search for \"" + app_name + "\" on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(app_name.encode("utf-8")) + ")\n\n"
+                        logger.info("\"" + app_name + "\" found. Full Name: " + foundApp.name + " - Link: " + foundApp.link)
                     else:
-                        reply +="I am sorry, I can't find any app named \"" + app + "\".\n\n"
-                        logging.info("Can't find any app named \"" + app + "\"")
+                        reply +="I am sorry, I can't find any app named \"" + app_name + "\".\n\n"
+                        logger.info("Can't find any app named \"" + app_name + "\"")
 
     if nOfRequestedApps > Config.maxAppsPerComment:
         reply = "You requested more than " + str(Config.maxAppsPerComment) + " apps. I will only link to the first " + str(Config.maxAppsPerComment) + " apps.\n\n" + reply
@@ -92,138 +86,77 @@ def generateComment(linkRequests):
 
 
 def findApp(appName):
-    logging.debug("Searching for \"" + appName + "\"")
+    logger.debug("Searching for \"" + appName + "\"")
     appName = appName.lower()
     app = None
     if len(appName)>0:
-       #app = searchInDatabase(appName)
-       #if app:
-       #     return app
-       # else:
-       return searchOnPlayStore(appName)
+        #app = searchInDatabase(appName)
+        #if app:
+        #     return app
+        # else:
+        try:
+            app = PlayStore.search(appName)
+            return app
+        except PlayStore.AppNotFoundException as e:
+            return None 
     else:
         return None
-
-def searchInDatabase(appName):
-    logging.debug("Searching in database for '" + appName + "'")
-    try:
-        appDB = AppDB.select().where((fn.Lower(AppDB.fullName) == appName) | (fn.Lower(AppDB.searchName) == appName)).get()
-    except AppDB.DoesNotExist:
-        logging.debug("'" + appName + "' NOT found in the DB")
-        return None
-    #logging.info("'" + appName + "' found in the DB")
-    #return appDB
-    return None
-
-def parseResultsPage(request,appName):
-    page = BeautifulSoup(request.text)
-    cards = page.findAll(attrs={"class": "card"})
-    if len(cards) > 0:
-        app = getAppFromCard(cards[0])
-        if app:
-            app.searchName = appName
-            #addToDB(app)
-        return app
-    else:
-        return None
-
-def searchOnPlayStore(appName):
-    appNameNoUnicode = appName.encode('utf-8') #to utf-8 because quote_plus don't like unicode!
-    encodedName = urllib.quote_plus(appNameNoUnicode)
-    try:
-        request = requests.get("http://play.google.com/store/search?q=\"" + encodedName + "\"&c=apps&hl=en")
-        app = parseResultsPage(request,appName)
-
-        if app == None:
-            request = requests.get("http://play.google.com/store/search?q=" + encodedName + "&c=apps&hl=en")
-            app = parseResultsPage(request,appName)
-        
-        logging.info("'" + appName + "' found on the PlayStore")
-        return app
-    except Exception as e:
-        logging.error("Exception \"" + str(e) + "\" occured while searching on the Play Store! Shutting down!")
-        stopBot(True)
-
-def getAppFromCard(card):
-    app = App()
-    app.fullName =  card.find(attrs={"class": "title"}).get("title")
-    app.link =  "https://play.google.com" + card.find(attrs={"class": "title"}).get("href")
-    price = card.find(attrs={"class": "display-price"})
-    if price != None:
-        app.free = False
-    else:
-        app.free = True
-    app.rating = card.find(attrs={"class": "current-rating"})["style"].strip().replace("width: ","").replace("%","")[:3].replace(".","")
-    
-    appPage = requests.get(app.link)
-    page = BeautifulSoup(appPage.text)
-    iapElements = page.findAll(attrs={"class": "inapp-msg"})
-    if len(iapElements) > 0:
-        app.IAP = True
-    else:
-        app.IAP = False
-
-    return app
 
 def reply(comment,myReply):
-    logging.debug("Replying to \"" + comment.id + "\"")
+    logger.debug("Replying to \"" + comment.id + "\"")
     myReply += Config.closingFormula
     tryAgain = True
     while tryAgain:
         tryAgain = False
         try:
             comment.reply(myReply)
-            logging.info("Successfully replied to comment \"" + comment.id + "\"\n")
+            logger.info("Successfully replied to comment \"" + comment.id + "\"\n")
             break
         except praw.errors.RateLimitExceeded as timeError:
-            logging.warning("Doing too much, sleeping for " + str(timeError.sleep_time))
+            logger.warning("Doing too much, sleeping for " + str(timeError.sleep_time))
             time.sleep(timeError.sleep_time)
             tryAgain = True
         except Exception as e:
-            logging.error("Exception \"" + str(e) + "\" occured while replying to \"" + comment.id + "\"! Shutting down!")
+            logger.error("Exception \"" + str(e) + "\" occured while replying to \"" + comment.id + "\"! Shutting down!")
             stopBot(True)
 
-def addToDB(app):
-    appDB = AppDB()
-    appDB.fullName = app.fullName
-    appDB.link = app.link
-    appDB.rating = app.rating
-    appDB.free = app.free
-    appDB.searchName = app.searchName
-    appDB.save()
 
 
 ####### main method #######
 if __name__ == "__main__":
 
-    #setting up the logger
-    logging.basicConfig(filename=Config.logFile,level=Config.loggingLevel,format='%(levelname)-8s %(message)s')
-
-    console = logging.StreamHandler()
-    console.setLevel(Config.loggingLevel)
-    console.setFormatter(logging.Formatter('%(asctime)s %(levelname)-8s %(message)s'))
-    logging.getLogger('').addHandler(console)
+    logger = logging.getLogger('LinkMeBot')
+    logger.setLevel(Config.loggingLevel)
+    fh = logging.FileHandler(Config.logFile)
+    fh.setLevel(Config.loggingLevel)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    logger.addHandler(fh)
+    logger.addHandler(ch)
 
     """if os.path.isfile(Config.botRunningFile):
-            logging.warning("The bot is already running! Shutting down!")
+            logger.warning("The bot is already running! Shutting down!")
             stopBot()
 
     open(Config.botRunningFile, "w").close()"""
 
 
-    logging.debug("Logging in")
+    logger.debug("Logging in")
     try:
         r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696")
         r.login(Config.username, Config.password)
-        logging.debug("Successfully logged in")
+        logger.debug("Successfully logged in")
 
     except praw.errors.RateLimitExceeded as error:
-        logging.error("The bot is doing too much! Sleeping for " + str(error.sleep_time) + " and then shutting down!")
+        logger.error("The bot is doing too much! Sleeping for " + str(error.sleep_time) + " and then shutting down!")
         time.sleep(error.sleep_time)
         stopBot(True)
 
     except Exception as e:
-        logging.error("Exception \"" + str(e) + "\" occured on login! Shutting down!")
+        logger.error("Exception \"" + str(e) + "\" occured on login! Shutting down!")
         stopBot(True)
 
 
@@ -231,14 +164,14 @@ if __name__ == "__main__":
     subreddits = r.get_subreddit("+".join(Config.subreddits))
 
 
-    linkRequestRegex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|$)", re.M | re.I)
+    linkRequestRegex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|$)", re.M | re.I)
 
     try:
-        logging.debug("Getting the comments")
+        logger.debug("Getting the comments")
         comments = subreddits.get_comments()
-        logging.debug("Comments successfully loaded")
+        logger.debug("Comments successfully loaded")
     except Exception as e:
-        logging.error("Exception \"" + str(e) + "\" occured while getting comments! Shutting down!")
+        logger.error("Exception \"" + str(e) + "\" occured while getting comments! Shutting down!")
         stopBot(True)
 
     for comment in comments:
@@ -249,13 +182,13 @@ if __name__ == "__main__":
 
         if len(linkRequests) > 0:
             if not isDone(comment):
-                logging.info("Generating reply to \"" + comment.id + "\"")
+                logger.info("Generating reply to \"" + comment.id + "\"")
                 myReply = generateComment(linkRequests)
                 
                 if myReply is not None:
                     reply(comment,myReply)
                 else:
-                    logging.info("No apps found for comment \"" + comment.id + "\"\n\n")
+                    logger.info("No apps found for comment \"" + comment.id + "\"\n\n")
 
-    logging.debug("Shutting down")
+    logger.debug("Shutting down")
     stopBot(True)

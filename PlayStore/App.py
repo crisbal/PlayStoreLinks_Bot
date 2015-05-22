@@ -1,7 +1,6 @@
 class App():
-    fullName = None
+    name = None
     link = None
-    searchName = None
     rating = 0
     free = False
     IAP = False
