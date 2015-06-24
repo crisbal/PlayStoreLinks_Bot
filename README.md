@@ -42,7 +42,7 @@ Feel free to make a new post if  you want to test the bot, or just use an existi
 ####TODO
 
 * Autodelete
-* Better Code (Separate module for Play Store stuff)
+* Database
 
 
 ####Want to help or want help?
