@@ -18,6 +18,7 @@ General workflow:
 import praw
 #general
 import sys
+import os
 import re
 import cPickle as pickle
 #web
@@ -28,11 +29,18 @@ import Config
 from PlayStore import PlayStore
 
 
-def stopBot():
+def stopBot(doSave = True):
     logger.info("Shutting down")
-    logger.debug("Dumping already_done")
-    pickle.dump( already_done, open( "done.p", "wb" ) )
-    logger.debug("Really shutting down")
+
+    if os.path.isfile("/tmp/botRunning"):
+        logger.debug("Deleting lock file")
+        os.remove('/tmp/botRunning')
+
+    if doSave:
+        logger.debug("Dumping already_done")
+        pickle.dump( already_done, open( "done.p", "wb" ) )
+        logger.debug("Really shutting down")
+
     sys.exit(0)
 
 def removeRedditFormatting(text):
@@ -143,6 +151,13 @@ logger.addHandler(ch)
 if __name__ == "__main__":
 
     logger.info("Starting up")
+
+    if os.path.isfile("/tmp/botRunning"):
+        logger.warning("Bot is already running!")
+        stopBot(False)
+    else:
+        with open('/tmp/botRunning', 'a'):
+            pass
 
     logger.debug("Loading already_done")
     try:
