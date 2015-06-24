@@ -32,9 +32,9 @@ from PlayStore import PlayStore
 def stopBot(doSave = True):
     logger.info("Shutting down")
 
-    if os.path.isfile("/tmp/botRunning"):
+    if os.path.isfile(Config.botRunningFile):
         logger.debug("Deleting lock file")
-        os.remove('/tmp/botRunning')
+        os.remove(Config.botRunningFile)
 
     if doSave:
         logger.debug("Dumping already_done")
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         logger.warning("Bot is already running!")
         stopBot(False)
     else:
-        with open('/tmp/botRunning', 'a'):
+        with open(Config.botRunningFile, 'a'):
             pass
 
     logger.debug("Loading already_done")
@@ -209,7 +209,8 @@ if __name__ == "__main__":
                 logger.debug("Generating reply to '" + comment.id + "'")
                 reply = generateReply(link_me_requests)
                 if reply is not None:
-                    doReply(comment,reply)
+                    if not isDone(comment):
+                        doReply(comment,reply)
                 else:
                     logger.info("No Apps found for comment '" + comment.id + "'. Ignoring reply.")
     stopBot()
