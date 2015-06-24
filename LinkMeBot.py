@@ -209,8 +209,7 @@ if __name__ == "__main__":
                 logger.debug("Generating reply to '" + comment.id + "'")
                 reply = generateReply(link_me_requests)
                 if reply is not None:
-                    if not isDone(comment):
-                        doReply(comment,reply)
+                    doReply(comment,reply)
                 else:
                     logger.info("No Apps found for comment '" + comment.id + "'. Ignoring reply.")
     stopBot()
