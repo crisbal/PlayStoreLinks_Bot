@@ -11,7 +11,7 @@ import time
 import logging
 logger = logging.getLogger('LinkMeBot')
 logger.setLevel(Config.loggingLevel)
-fh = logging.FileHandler(Config.logFile)
+fh = logging.FileHandler(Config.logFileDelete)
 fh.setLevel(Config.loggingLevel)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
