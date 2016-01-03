@@ -18,6 +18,7 @@ General workflow:
 import praw
 #general
 import sys
+import time
 import os
 import re
 import cPickle as pickle
@@ -171,7 +172,7 @@ if __name__ == "__main__":
 
     try:
         r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696 V2.0")
-        r.login(Config.username, Config.password)
+        r.login(Config.username, Config.password, disable_warning=True)
         logger.info("Successfully logged in")
 
     except praw.errors.RateLimitExceeded as error:

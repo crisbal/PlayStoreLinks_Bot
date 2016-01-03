@@ -10,6 +10,7 @@ loggingLevel = logging.INFO
 #FILES
 databaseFile = "botDatabase.db"
 logFile = "bot.log"
+logFileDelete = "botDelete.log"
 botRunningFile = "botRunning"
 
 #SUBREDDITS
