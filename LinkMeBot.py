@@ -21,26 +21,21 @@ import sys
 import time
 import os
 import re
-import cPickle as pickle
+import pickle
 #web
 import urllib
-import HTMLParser
+import html
 #mine
 import Config
 from PlayStore import PlayStore
 
 
-def stopBot(doSave = True):
+def stopBot():
     logger.info("Shutting down")
 
     if os.path.isfile(Config.botRunningFile):
         logger.debug("Deleting lock file")
         os.remove(Config.botRunningFile)
-
-    if doSave:
-        logger.debug("Dumping already_done")
-        pickle.dump( already_done, open( "done.p", "wb" ) )
-        logger.debug("Really shutting down")
 
     sys.exit(0)
 
@@ -50,11 +45,12 @@ def removeRedditFormatting(text):
 
 def isDone(comment):
     #TODO check if in the database
-    if comment.id in already_done:
-        logger.debug("Already replied to '" + comment.id + "'")
-        return True
+    comment.refresh()
+    for reply in comment.replies:
+        if reply.author.name.lower() == Config.username.lower():
+            logging.debug("Already replied to \"" + comment.id + "\"")
+            return True
 
-    already_done.append(comment.id)
     return False
 
 def generateReply(link_me_requests):
@@ -69,7 +65,7 @@ def generateReply(link_me_requests):
             app_name = app_name.strip()
 
             if len(app_name) > 0:
-                app_name = HTMLParser.HTMLParser().unescape(app_name)  #html encoding to normal encoding 
+                app_name = html.unescape(app_name)  #html encoding to normal encoding 
                 nOfRequestedApps += 1
                 
                 if nOfRequestedApps <= Config.maxAppsPerComment:
@@ -78,7 +74,7 @@ def generateReply(link_me_requests):
                     if app:
                         nOfFoundApps += 1
                         my_reply += "[**" + app.name + "**](" + app.link + ") - " + ("Free" if app.free else "Paid") + " " + (" with IAP -" if app.IAP else " - ") + " Rating: " + app.rating + "/100 - "
-                        my_reply += "Search for '" + app_name + "' on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.quote_plus(app_name.encode("utf-8")) + ")\n\n"
+                        my_reply += "Search for '" + app_name + "' on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.parse.quote_plus(app_name.encode("utf-8")) + ")\n\n"
                         
                         logger.info("'" + app_name + "' found. Name: " + app.name)
                     else:
@@ -160,18 +156,11 @@ if __name__ == "__main__":
         with open(Config.botRunningFile, 'a'):
             pass
 
-    logger.debug("Loading already_done")
-    try:
-        already_done = pickle.load( open( "done.p", "rb" ) )
-    except IOError:
-        already_done = []
-    
-
     logger.debug("Logging in")
 
 
     try:
-        r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696 V2.0")
+        r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696 V3.0")
         r.login(Config.username, Config.password, disable_warning=True)
         logger.info("Successfully logged in")
 
