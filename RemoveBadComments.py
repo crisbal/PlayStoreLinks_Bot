@@ -26,7 +26,7 @@ def stopBot():
     sys.exit(0)
 
 try:
-    r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696 V2.0")
+    r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696 V3.0")
     r.login(Config.username, Config.password, disable_warning=True)
     logger.info("Successfully logged in")
 
