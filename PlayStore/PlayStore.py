@@ -2,7 +2,15 @@ from bs4 import BeautifulSoup
 import requests
 import urllib
 
-from App import App
+class App():
+    name = None
+    link = None
+    rating = 0
+    free = False
+    IAP = False
+    
+    def __init__(self):
+        pass
 
 #debug and logging
 import logging
@@ -16,7 +24,7 @@ logger.addHandler(console_logger)
 
 def search(app_name):
     logger.info("Searching for '" + app_name + "'")
-    encoded_name = urllib.quote_plus(app_name.encode('utf-8')) #we encode the name to a valid string for a url, replacing spaces with "+" and and & with &amp; for example 
+    encoded_name = urllib.parse.quote_plus(app_name.encode('utf-8')) #we encode the name to a valid string for a url, replacing spaces with "+" and and & with &amp; for example 
 
     logger.debug("Sending request for quoted seach")
     page = requests.get("http://play.google.com/store/search?q=\"" + encoded_name + "\"&c=apps&hl=en")
@@ -42,7 +50,7 @@ def search(app_name):
 def parseSearchPage(page):
     #we need to parse the resulting page to get the app we are looking for
     
-    document = BeautifulSoup(page.text)
+    document = BeautifulSoup(page.text, "html.parser")
     cards = document.findAll(attrs={"class": "card"}) #we are looking for div with class set to 'card'
 
     if len(cards) > 0:
@@ -62,7 +70,7 @@ def parseSearchPage(page):
         if price is None:
             app.free = True
         else:
-            app.free = None
+            app.free = False
         logger.debug("Got the App's price")
 
         app.rating = card.find(attrs={"class": "current-rating"})["style"].strip().replace("width: ","").replace("%","")[:3].replace(".","")
@@ -73,7 +81,7 @@ def parseSearchPage(page):
         logger.debug("Downlaoding the App's page")
         app_page = requests.get(app.link)
         logger.debug("Analyzing the App's page")
-        app_document = BeautifulSoup(app_page.text)
+        app_document = BeautifulSoup(app_page.text, "html.parser")
         iap_element = app_document.findAll(attrs={"class": "inapp-msg"})
         if len(iap_element) > 0:
             app.IAP = True
