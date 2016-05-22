@@ -1,5 +1,4 @@
-##[PlayStoreLinks__Bot](http://www.reddit.com/u/PlayStoreLinks__Bot)
-
+##[PlayStoreLinks_Bot](http://www.reddit.com/u/PlayStoreLinks__Bot)
 
 A Reddit bot that links to Android Apps from the Play Store when a user asks to do it.
 
@@ -8,10 +7,8 @@ A Reddit bot that links to Android Apps from the Play Store when a user asks to 
 
 * LinkMeBot.py, the main program
 * App.py, a class that the bot uses to save data
-* AppDB.py, a class used to save data to the database
 * Config.py, a simple and easy to understand configuration file
 * Test.py, a simple test to see if the Play Store parsing works.
-* setup.py, something you need to run before running the bot the first time / applying updates
 * requirements.txt, the pip modules you need to install to run the bot
 * LICENSE, the license that this project is released under (MIT)
 * README, this file
@@ -19,7 +16,7 @@ A Reddit bot that links to Android Apps from the Play Store when a user asks to 
 
 ####What you need to know before editing this bot / running it on your local machine
 
-The bot was written on a Linux-Fedora machine with Python 2.7.5
+The bot was written on an Arch machine with Python 3
 
 See required packages in requirements.txt
 
@@ -36,7 +33,7 @@ If you want to test the code I suggest you to post a comment in a subreddit and 
 
 http://www.reddit.com/r/cris9696
 
-Feel free to make a new post if  you want to test the bot, or just use an existing one.
+Feel free to make a new post if you want to test the bot, or just use an existing one.
 
 
 ####TODO
