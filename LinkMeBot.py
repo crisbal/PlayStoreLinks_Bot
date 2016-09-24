@@ -27,12 +27,10 @@ import urllib
 import html
 #mine
 import Config
-from PlayStore import PlayStore
-
+import PlayStore
 
 def stopBot():
     logger.info("Shutting down")
-
     if os.path.isfile(Config.botRunningFile):
         logger.debug("Deleting lock file")
         os.remove(Config.botRunningFile)
@@ -72,10 +70,23 @@ def generateReply(link_me_requests):
                     app = findApp(app_name)
 
                     if app:
-                        nOfFoundApps += 1
-                        my_reply += "[**" + app.name + "**](" + app.link + ") - " + ("Free" if app.free else "Paid") + " " + (" with IAP -" if app.IAP else " - ") + " Rating: " + app.rating + "/100 - "
-                        my_reply += "Search for '" + app_name + "' on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.parse.quote_plus(app_name.encode("utf-8")) + ")\n\n"
+                        if len(requested_apps) == 1 and len(link_me_requests) == 1: #build pretty reply
+                            my_reply += "[**" + app.name + "**](" + app.link + ") by " + app.author + " | "
+                            my_reply += (" Free " if app.free else ("Paid: " + app.price)) + " "
+                            my_reply += ("with IAP" if app.IAP else "") + "\n\n"
+                            my_reply += "Description: " + app.description + "\n\n"
+                            my_reply += "Average rating of " + app.rating + "/100 | "
+                            my_reply += app.num_downloads + " downloads.\n\n"
+                            my_reply += "Search for '" + app_name + "' on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.parse.quote_plus(app_name) + ")\n\n"
+                        else:
+                            my_reply += "[**" + app.name + "**](" + app.link + ") - "
+                            my_reply += ("Free " if app.free else ("Paid: " + app.price)) + " "
+                            my_reply += ("with IAP - " if app.IAP else " - ") 
+                            #my_reply += ("Ad-supported - " if app.IAP else "") 
+                            my_reply += "Rating: " + app.rating + "/100 - "
+                            my_reply += "Search for '" + app_name + "' on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.parse.quote_plus(app_name) + ")\n\n"
                         
+                        nOfFoundApps += 1
                         logger.info("'" + app_name + "' found. Name: " + app.name)
                     else:
                         my_reply +="I am sorry, I can't find any app named '" + app_name + "'.\n\n"
@@ -103,7 +114,8 @@ def findApp(app_name):
         #     return app
         # else:
         try:
-            app = PlayStore.search(app_name)
+            playstoreclient = PlayStore.PlayStoreClient(logger_name=Config.loggerName)
+            app = playstoreclient.search(app_name)
             return app
         except PlayStore.AppNotFoundException as e:
             return None 
@@ -132,14 +144,13 @@ def doReply(comment,myReply):
 
 #building the logger
 import logging
-logger = logging.getLogger('LinkMeBot')
-logger.setLevel(Config.loggingLevel)
+logger = logging.getLogger(Config.loggerName)
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 fh = logging.FileHandler(Config.logFile)
 fh.setLevel(Config.loggingLevel)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
+ch = logging.StreamHandler()
 ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
@@ -149,9 +160,9 @@ if __name__ == "__main__":
 
     logger.info("Starting up")
 
-    if os.path.isfile("/tmp/botRunning"):
+    if os.path.isfile(Config.botRunningFile):
         logger.warning("Bot is already running!")
-        stopBot(False)
+        stopBot()
     else:
         with open(Config.botRunningFile, 'a'):
             pass
@@ -176,7 +187,7 @@ if __name__ == "__main__":
 
     subreddits = r.get_subreddit("+".join(Config.subreddits))
 
-    link_me_regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
+    link_me_regex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
 
     try:
         logger.debug("Getting the comments")
@@ -187,7 +198,6 @@ if __name__ == "__main__":
         stopBot()
 
     for comment in comments:
-
         #to avoid injection of stuff
         clean_comment = removeRedditFormatting(comment.body)
 

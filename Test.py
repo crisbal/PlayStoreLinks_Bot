@@ -3,24 +3,33 @@ import Config
 import logging
 Config.loggingLevel = logging.ERROR
 
-from PlayStore import PlayStore
-
+import PlayStore
 
 class TestLinkMe(unittest.TestCase):
     def setUp(self):
-        self.appPlayStore = PlayStore.search("facebook")
-        self.appPlayStore2 = PlayStore.search("Sleep as Android Unlock")
+        playStore = PlayStore.PlayStoreClient()
+        self.app = playStore.search("facebook")
+        self.app2 = playStore.search("Sleep as Android Unlock")
+        self.app3 = playStore.search("Plants vs. Zombies FREE")
+
         
         #self.appDB = linkMe.searchInDatabase("Facebook")
 
     def test_playStore(self):
-        self.assertEqual(self.appPlayStore.name, "Facebook",'Wrong name')
-        self.assertEqual(self.appPlayStore.free, True,'Wrong Price')
-        self.assertEqual(self.appPlayStore.link, "https://play.google.com/store/apps/details?id=com.facebook.katana",'Wrong Link')
+        self.assertEqual(self.app.name, "Facebook")
+        self.assertEqual(self.app.link, "https://play.google.com/store/apps/details?id=com.facebook.katana")
+        self.assertEqual(self.app.free, True)
+        self.assertEqual(self.app.price, "0")
 
-        self.assertEqual(self.appPlayStore2.name, "Sleep as Android Unlock",'Wrong fullName')
-        self.assertEqual(self.appPlayStore2.free, False,'Wrong Price')
-        self.assertEqual(self.appPlayStore2.link, "https://play.google.com/store/apps/details?id=com.urbandroid.sleep.full.key",'Wrong Link')
+        self.assertEqual(self.app2.name, "Sleep as Android Unlock")
+        self.assertEqual(self.app2.link, "https://play.google.com/store/apps/details?id=com.urbandroid.sleep.full.key")
+        self.assertEqual(self.app2.free, False)
+        self.assertNotEqual(self.app2.price, "0")
+
+        self.assertEqual(self.app3.name, "Plants vs. Zombies FREE")
+        self.assertEqual(self.app3.link, "https://play.google.com/store/apps/details?id=com.ea.game.pvzfree_row")
+        self.assertEqual(self.app3.free, True)
+        self.assertEqual(self.app3.price, "0")
 
 
 if __name__ == '__main__':
