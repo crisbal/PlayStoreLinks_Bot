@@ -31,12 +31,12 @@ try:
     logger.info("Successfully logged in")
 
 except praw.errors.RateLimitExceeded as error:
-    logger.error("The Bot is doing too much! Sleeping for " + str(error.sleep_time) + " and then shutting down!")
+    logger.error("The Bot is doing too much! Sleeping for {} and then shutting down!".format(error.sleep_time))
     time.sleep(error.sleep_time)
     stopBot()
 
 except Exception as e:
-    logger.error("Exception '" + str(e) + "' occured on login!")
+    logger.error("Exception '{}' occured on login!".format(e))
     stopBot()
 
 
@@ -45,5 +45,5 @@ comments = user.get_comments()
 
 for comment in comments:
     if(comment.score <= -1):
-        logger.warn("Removing comment " + comment.id)
+        logger.warn("Removing comment {}".format(comment.id))
         comment.delete()
