@@ -21,12 +21,12 @@ class PlayStoreClient():
             self.logger = logger
 
     def search(self, query):
-        self.logger.info("Searching for '" + query + "'")
-        
+        self.logger.info("Searching for '{}'".format(query))
+
         self.logger.debug("Sending request for quoted seach")
-        params = { "q": "\"" + query + "\"", "c": "apps", "hl": "en"}; #first try with 
+        params = {"q": '"{}"'.format(query), "c": "apps", "hl": "en"};  # first try with
         page_request = requests.get("http://play.google.com/store/search", params=params)
-        
+
         self.logger.debug("Analyzing request for quoted seach")
         app = self.parse_search_page(page_request.text)
 
@@ -34,15 +34,15 @@ class PlayStoreClient():
             self.logger.debug("Sending request for unquoted seach")
             params = { "q": query, "c": "apps", "hl": "en"};
             page_request = requests.get("http://play.google.com/store/search", params=params)
-            
+
             self.logger.debug("Analyzing request for unquoted seach")
             app = self.parse_search_page(page_request.text)
-        
+
         if app is None:
             #if app is still none
-            self.logger.warning("Can't find " + query + " on the Play Store!")
-            raise AppNotFoundException("Can't find " + query + " on the Play Store!")
-        
+            self.logger.warning("Can't find {} on the Play Store!".format(query))
+            raise AppNotFoundException("Can't find {} on the Play Store!".format(query))
+
         self.logger.info("App was found")
         return app
 

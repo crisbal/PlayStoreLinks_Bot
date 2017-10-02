@@ -46,7 +46,7 @@ def isDone(comment):
     comment.refresh()
     for reply in comment.replies:
         if reply.author.name.lower() == Config.username.lower():
-            logging.debug("Already replied to \"" + comment.id + "\"")
+            logging.debug('Already replied to "{}"'.format(comment.id))
             return True
 
     return False
@@ -71,29 +71,29 @@ def generateReply(link_me_requests):
 
                     if app:
                         if len(requested_apps) == 1 and len(link_me_requests) == 1: #build pretty reply
-                            my_reply += "[**" + app.name + "**](" + app.link + ") by " + app.author + " | "
-                            my_reply += (" Free " if app.free else ("Paid: " + app.price)) + " "
+                            my_reply += "[**{}**]({}) by {} | ".format(app.name, app.link, app.author)
+                            my_reply += (" Free " if app.free else ("Paid: {} ".format(app.price)))
                             my_reply += ("with IAP" if app.IAP else "") + "\n\n"
-                            my_reply += "Description: " + app.description + "\n\n"
-                            my_reply += "Average rating of " + app.rating + "/100 | "
-                            my_reply += app.num_downloads + " downloads.\n\n"
-                            my_reply += "Search for '" + app_name + "' on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.parse.quote_plus(app_name) + ")\n\n"
+                            my_reply += "Description: {}\n\n".format(app.description)
+                            my_reply += "Average rating of {}/100 | ".format(app.rating)
+                            my_reply += "{} downloads.\n\n".format(app.num_downloads)
+                            my_reply += "Search for '{}' on the [**Play Store**](https://play.google.com/store/search?q={})\n\n".format(app_name, urllib.parse.quote_plus(app_name))
                         else:
-                            my_reply += "[**" + app.name + "**](" + app.link + ") - "
-                            my_reply += ("Free " if app.free else ("Paid: " + app.price)) + " "
+                            my_reply += "[**{}**]({}) - ".format(app.name, app.link)
+                            my_reply += ("Free " if app.free else ("Paid: {} ".format(app.price)))
                             my_reply += ("with IAP - " if app.IAP else " - ") 
                             #my_reply += ("Ad-supported - " if app.IAP else "") 
-                            my_reply += "Rating: " + app.rating + "/100 - "
-                            my_reply += "Search for '" + app_name + "' on the [**Play Store**](https://play.google.com/store/search?q=" + urllib.parse.quote_plus(app_name) + ")\n\n"
+                            my_reply += "Rating: {}/100 - ".format(app.rating)
+                            my_reply += "Search for '{}' on the [**Play Store**](https://play.google.com/store/search?q={})\n\n".format(app_name, urllib.parse.quote_plus(app_name))
                         
                         nOfFoundApps += 1
-                        logger.info("'" + app_name + "' found. Name: " + app.name)
+                        logger.info("'{}' found. Name: {}".format(app_name, app.name))
                     else:
-                        my_reply +="I am sorry, I can't find any app named '" + app_name + "'.\n\n"
-                        logger.info("Can't find any app named '" + app_name + "'")
+                        my_reply += "I am sorry, I can't find any app named '{}'.\n\n".format(app_name)
+                        logger.info("Can't find any app named '{}'".format(app_name))
 
     if nOfRequestedApps > Config.maxAppsPerComment:
-        my_reply = "You requested more than " + str(Config.maxAppsPerComment) + " apps. I will only link to the first " + str(Config.maxAppsPerComment) + " apps.\n\n" + my_reply
+        my_reply = "You requested more than {0} apps. I will only link to the first {0} apps.\n\n".format(Config.maxAppsPerComment) + my_reply
     
     my_reply += Config.closingFormula
 
@@ -104,7 +104,7 @@ def generateReply(link_me_requests):
 
 
 def findApp(app_name):
-    logger.debug("Searching for '" + app_name + "'")
+    logger.debug("Searching for '{}'".format(app_name))
     app_name = app_name.lower()
     app = None
 
@@ -123,7 +123,7 @@ def findApp(app_name):
         return None
 
 def doReply(comment,myReply):
-    logger.debug("Replying to '" + comment.id + "'")
+    logger.debug("Replying to '{}'".format(comment.id))
     
     tryAgain = True
     while tryAgain:
@@ -131,14 +131,14 @@ def doReply(comment,myReply):
         try:
             # "#&#009;\n\n###&#009;\n\n#####&#009;\n"
             comment.reply(myReply)
-            logger.info("Successfully replied to comment '" + comment.id + "'\n")
+            logger.info("Successfully replied to comment '{}'\n".format(comment.id))
             break
         except praw.errors.RateLimitExceeded as timeError:
-            logger.warning("Doing too much, sleeping for " + str(timeError.sleep_time))
+            logger.warning("Doing too much, sleeping for {}".format(timeError.sleep_time))
             time.sleep(timeError.sleep_time)
             tryAgain = True
         except Exception as e:
-            logger.error("Exception '" + str(e) + "' occured while replying to '" + comment.id + "'!")
+            logger.error("Exception '{}' occured while replying to '{}'!".format(e, comment.id))
             stopBot()
 
 
@@ -176,12 +176,12 @@ if __name__ == "__main__":
         logger.info("Successfully logged in")
 
     except praw.errors.RateLimitExceeded as error:
-        logger.error("The Bot is doing too much! Sleeping for " + str(error.sleep_time) + " and then shutting down!")
+        logger.error("The Bot is doing too much! Sleeping for {} and then shutting down!".format(error.sleep_time))
         time.sleep(error.sleep_time)
         stopBot()
 
     except Exception as e:
-        logger.error("Exception '" + str(e) + "' occured on login!")
+        logger.error("Exception '{}' occured on login!".format(e))
         stopBot()
 
 
@@ -194,7 +194,7 @@ if __name__ == "__main__":
         comments = subreddits.get_comments()
         logger.info("Comments successfully downloaded")
     except Exception as e:
-        logger.error("Exception '" + str(e) + "' occured while getting comments!")
+        logger.error("Exception '{}' occured while getting comments!".format(e))
         stopBot()
 
     for comment in comments:
@@ -206,10 +206,10 @@ if __name__ == "__main__":
         #if it matches
         if len(link_me_requests) > 0:
             if not isDone(comment): #we check if we have not already answered to the comment
-                logger.debug("Generating reply to '" + comment.id + "'")
+                logger.debug("Generating reply to '{}'".format(comment.id))
                 reply = generateReply(link_me_requests)
                 if reply is not None:
                     doReply(comment,reply)
                 else:
-                    logger.info("No Apps found for comment '" + comment.id + "'. Ignoring reply.")
+                    logger.info("No Apps found for comment '{}'. Ignoring reply.".format(comment.id))
     stopBot()
