@@ -109,8 +109,11 @@ class PlayStoreClient():
             self.logger.debug("Got app.update_date")
 
             file_size_element = app_document.find(attrs={"itemprop": "fileSize"})
-            app.file_size = file_size_element.getText()
-            self.logger.debug("Got app.file_size")
+            if file_size_element:
+                app.file_size = file_size_element.getText()
+                self.logger.debug("Got app.file_size")
+            else:
+                self.logger.debug("Can't get app.file_size")
 
             num_downloads_element = app_document.find(attrs={"itemprop": "numDownloads"})
             app.num_downloads = num_downloads_element.getText()
