@@ -26,22 +26,23 @@ def stopBot():
     sys.exit(0)
 
 try:
-    r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696 V3.0")
-    r.login(Config.username, Config.password, disable_warning=True)
+    r = praw.Reddit(client_id=Config.client_id,
+        client_secret=Config.client_secret,
+        username=Config.username,
+        password=Config.password,
+        user_agent="/u/PlayStoreLinks__Bot by /u/cris9696 v4.0")
     logger.info("Successfully logged in")
-
 except praw.errors.RateLimitExceeded as error:
     logger.error("The Bot is doing too much! Sleeping for {} and then shutting down!".format(error.sleep_time))
     time.sleep(error.sleep_time)
     stopBot()
-
 except Exception as e:
     logger.error("Exception '{}' occured on login!".format(e))
     stopBot()
 
 
-user = r.get_redditor(Config.username)
-comments = user.get_comments()
+user = r.redditor(Config.username)
+comments = user.comments.new()
 
 for comment in comments:
     if(comment.score <= -1):
