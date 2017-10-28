@@ -48,7 +48,7 @@ def isDone(comment):
     comment.refresh()
     for reply in comment.replies:
         if reply.author.name.lower() == Config.username.lower():
-            logging.debug('Already replied to "{}"'.format(comment.id))
+            logger.debug('Already replied to "{}"'.format(comment.id))
             return True
 
     return False
