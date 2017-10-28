@@ -10,22 +10,23 @@ General workflow:
 * analyze comments
 * reply to valid comments
 * shutdown
-
-
 """
 
-#reddit
+# reddit
 import praw
-#general
+
+# general
 import sys
 import time
 import os
 import re
 import pickle
-#web
+
+# web
 import urllib
 import html
-#mine
+
+# mine
 import Config
 import PlayStore
 
@@ -36,6 +37,7 @@ def stopBot():
         os.remove(Config.botRunningFile)
 
     sys.exit(0)
+
 
 def removeRedditFormatting(text):
     return text.replace("*", "").replace("~", "").replace("^", "").replace(">","").replace("[","").replace("]","").replace("(","").replace(")","")
@@ -50,6 +52,7 @@ def isDone(comment):
             return True
 
     return False
+
 
 def generateReply(link_me_requests):
     my_reply = ""
@@ -122,6 +125,7 @@ def findApp(app_name):
     else:
         return None
 
+
 def doReply(comment,myReply):
     logger.debug("Replying to '{}'".format(comment.id))
     
@@ -129,7 +133,6 @@ def doReply(comment,myReply):
     while tryAgain:
         tryAgain = False
         try:
-            # "#&#009;\n\n###&#009;\n\n#####&#009;\n"
             comment.reply(myReply)
             logger.info("Successfully replied to comment '{}'\n".format(comment.id))
             break
@@ -171,27 +174,27 @@ if __name__ == "__main__":
 
 
     try:
-        r = praw.Reddit("/u/PlayStoreLinks__Bot by /u/cris9696 V3.0")
-        r.login(Config.username, Config.password, disable_warning=True)
+        r = praw.Reddit(client_id=Config.client_id,
+            client_secret=Config.client_secret,
+            username=Config.username,
+            password=Config.password,
+            user_agent="/u/PlayStoreLinks__Bot by /u/cris9696 v4.0")
         logger.info("Successfully logged in")
-
     except praw.errors.RateLimitExceeded as error:
         logger.error("The Bot is doing too much! Sleeping for {} and then shutting down!".format(error.sleep_time))
         time.sleep(error.sleep_time)
         stopBot()
-
     except Exception as e:
         logger.error("Exception '{}' occured on login!".format(e))
         stopBot()
 
+    subreddits = r.subreddit("+".join(Config.subreddits))
 
-    subreddits = r.get_subreddit("+".join(Config.subreddits))
-
-    link_me_regex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
+    link_me_regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
 
     try:
         logger.debug("Getting the comments")
-        comments = subreddits.get_comments()
+        comments = subreddits.comments()
         logger.info("Comments successfully downloaded")
     except Exception as e:
         logger.error("Exception '{}' occured while getting comments!".format(e))
@@ -209,7 +212,7 @@ if __name__ == "__main__":
                 logger.debug("Generating reply to '{}'".format(comment.id))
                 reply = generateReply(link_me_requests)
                 if reply is not None:
-                    doReply(comment,reply)
+                    doReply(comment, reply)
                 else:
                     logger.info("No Apps found for comment '{}'. Ignoring reply.".format(comment.id))
     stopBot()
