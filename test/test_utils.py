@@ -19,9 +19,9 @@ hello world
         
     def test_human_readable_download_number(self):
         self.assertEqual(human_readable_download_number('12'), '12')
-        self.assertEqual(human_readable_download_number('12000'), '12 Thousand')
-        self.assertEqual(human_readable_download_number('12000000'), '12 Million')
-        self.assertEqual(human_readable_download_number('12,000,000 - 15,000,000'), '12 Million')        
+        self.assertEqual(human_readable_download_number('12000'), '12 thousand')
+        self.assertEqual(human_readable_download_number('12000000'), '12 million')
+        self.assertEqual(human_readable_download_number('12,000,000 - 15,000,000'), '12 million')        
         
 if __name__ == '__main__':
     unittest.main()
