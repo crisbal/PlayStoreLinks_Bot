@@ -41,6 +41,7 @@ def stopBot(delete_lockfile=True):
 
 def is_done(comment):
     #TODO check if in the database
+    comment.parent().refresh()
     comment.refresh()
     for reply in comment.replies:
         if reply.author.name.lower() == Config.username.lower():
@@ -76,7 +77,7 @@ def generate_reply(link_me_requests):
                     reply_body += "[**{}**]({}) by {} | ".format(app.name, app.link, app.author)
                     reply_body += (" Free " if app.free else ("Paid: {} ".format(app.price)))
                     reply_body += ("with IAP" if app.IAP else "") + "\n\n"
-                    reply_body += "Description: {}\n\n".format(app.description)
+                    reply_body += "> {}\n\n".format(app.description)
                     reply_body += "Rating: {}/100 | ".format(app.rating)
                     reply_body += "{} downloads.\n\n".format(app.num_downloads)
                     reply_body += "[Search manually](https://play.google.com/store/search?q={})\n\n".format(app_name, urllib.parse.quote_plus(app_name))
