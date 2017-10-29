@@ -1,4 +1,6 @@
 import logging
+import math
+
 from misaka import Markdown, HtmlRenderer
 from lxml.html import fromstring
 
@@ -34,3 +36,13 @@ def get_text_from_markdown(markdown_text):
 	
 	text = ''.join(parsed_html.text_content()).strip()
 	return text
+
+# https://stackoverflow.com/a/3155023
+millnames = ['',' thousand',' million',' billion',' trillion']
+def human_readable_download_number(download_number_string):
+	download_number_string = download_number_string.split("-")[0].replace(',','').strip()
+	n = float(download_number_string)
+	millidx = max(0,min(len(millnames)-1,
+		int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
+	
+	return '{:.0f}{}'.format(n / 10**(3 * millidx), millnames[millidx])

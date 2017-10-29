@@ -28,7 +28,7 @@ import html
 
 # mine
 from . import Config
-from .utils import make_logger, get_text_from_markdown
+from .utils import make_logger, get_text_from_markdown, human_readable_download_number
 
 import PlayStore
 
@@ -41,8 +41,8 @@ def stopBot(delete_lockfile=True):
 
 def is_done(comment):
     #TODO check if in the database
-    comment.parent().refresh()
     comment.refresh()
+    comment.refresh()    
     for reply in comment.replies:
         if reply.author.name.lower() == Config.username.lower():
             logger.debug('Already replied to "{}"'.format(comment.id))
@@ -79,7 +79,7 @@ def generate_reply(link_me_requests):
                     reply_body += ("with IAP" if app.IAP else "") + "\n\n"
                     reply_body += "> {}\n\n".format(app.description)
                     reply_body += "Rating: {}/100 | ".format(app.rating)
-                    reply_body += "{} downloads.\n\n".format(app.num_downloads)
+                    reply_body += "{} installs\n\n".format(human_readable_download_number(app.num_downloads))
                     reply_body += "[Search manually](https://play.google.com/store/search?q={})\n\n".format(app_name, urllib.parse.quote_plus(app_name))
                 else:
                     reply_body += "[**{}**]({}) - ".format(app.name, app.link)
