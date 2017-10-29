@@ -12,7 +12,6 @@ loggerName = "LinkMeBot"
 
 # FILES
 logFile = "bot.log"
-logFileDelete = "botDelete.log"
 botRunningFile = "/tmp/botRunning"
 
 # SUBREDDITS

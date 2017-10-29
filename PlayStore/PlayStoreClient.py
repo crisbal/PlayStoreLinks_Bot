@@ -1,10 +1,12 @@
-from bs4 import BeautifulSoup
 import requests
 import urllib
 
 import logging
 
 from PlayStore import App, AppNotFoundException
+
+from lxml.html import fromstring
+
 
 class PlayStoreClient():
     def __init__(self, logger_name = None):
@@ -46,12 +48,12 @@ class PlayStoreClient():
         self.logger.info("App was found")
         return app
 
-    def parse_search_page(self, page_html):
+    def parse_search_page(self, search_page_html):
         #we need to parse the resulting page to get the app we are looking for
         
-        document = BeautifulSoup(page_html, "html.parser")
-        cards = document.findAll(attrs={"class": "card"}) #we are looking for div with class set to 'card', these are search results
-
+        document = fromstring(search_page_html)
+        cards = document.find_class("card") #we are looking for div with class set to 'card', these are search results
+            
         if len(cards) > 0:
             #we need to get info on the first card/app we find since it's probably the correct guess
             card = cards[0]
@@ -59,25 +61,25 @@ class PlayStoreClient():
             app = App()
             
             #let's do some html/css parsing
-            app.name =  card.find(attrs={"class": "title"}).get("title")
+            app.name =  card.find_class("title")[0].get("title")
             self.logger.debug("Got app.name")
 
-            app.link =  "https://play.google.com" + card.find(attrs={"class": "title"}).get("href")
+            app.link =  "https://play.google.com" + card.find_class("title")[0].get("href")
             self.logger.debug("Got app.link")
             
-            app.rating = card.find(attrs={"class": "current-rating"})["style"].strip().replace("width: ","").replace("%","")[:3].replace(".","")
+            app.rating = card.find_class("current-rating")[0].get("style").strip().replace("width: ","").replace("%","")[:3].replace(".","")
             #we get the rating, reading it from the style attribute
             self.logger.debug("Got app.rating")
 
             #we also download the page of the app to check for IAP and more
             self.logger.debug("Downloading the App's page")
-            app_page = requests.get(app.link, {"hl": "en", "gl": "us"})
+            app_page_html = requests.get(app.link, {"hl": "en", "gl": "us"}).text
             self.logger.debug("Analyzing the App's page")
             
-            app_document = BeautifulSoup(app_page.text, "html.parser")
+            app_document = fromstring(app_page_html)
             
-            price_element = app_document.find("meta", attrs={"itemprop": "price"})
-            app.price = price_element["content"]
+            price_element = app_document.xpath("//meta[@itemprop='price']")[0]
+            app.price = price_element.get("content")
             self.logger.debug("Got app.price")
             
             if app.price is "0":
@@ -86,45 +88,38 @@ class PlayStoreClient():
                 app.free = False
             self.logger.debug("Got app.free")
 
-            iap_element = app_document.findAll(attrs={"class": "inapp-msg"})
+            iap_element = app_document.find_class("inapp-msg")
             if len(iap_element) > 0:
                 app.IAP = True
             else:
                 app.IAP = False
             self.logger.debug("Got app.IAP")
 
-            """ads_element = app_document.findAll(attrs={"class": "ads-supported-label-msg"})
-            if len(ads_element) > 0:
-                app.ads = True
-            else:
-                app.ads = False
-            self.logger.debug("Got app.ads")"""
-
-            author_element = app_document.find(attrs={"class": "details-info"}).find("span", attrs={"itemprop": "name"})
-            app.author = author_element.getText()
+            author_element = app_document.find_class('details-info')[0].xpath('//span[@itemprop="name"]')[0]
+            app.author = author_element.text_content()
             self.logger.debug("Got app.author")
 
-            last_update_element = app_document.find(attrs={"itemprop": "datePublished"})
-            app.update_date = last_update_element.getText()
+            last_update_element = app_document.xpath('//div[@itemprop="datePublished"]')[0]
+            app.update_date = last_update_element.text_content()
             self.logger.debug("Got app.update_date")
 
-            file_size_element = app_document.find(attrs={"itemprop": "fileSize"})
-            if file_size_element:
-                app.file_size = file_size_element.getText()
+            file_size_elements = app_document.xpath('//div[@itemprop="fileSize"]')
+            if len(file_size_elements) > 0:
+                app.file_size = file_size_elements[0].text_content()
                 self.logger.debug("Got app.file_size")
             else:
                 self.logger.debug("Can't get app.file_size")
 
-            num_downloads_element = app_document.find(attrs={"itemprop": "numDownloads"})
-            app.num_downloads = num_downloads_element.getText()
+            num_downloads_element = app_document.xpath('//div[@itemprop="numDownloads"]')[0]
+            app.num_downloads = num_downloads_element.text_content()
             self.logger.debug("Got app.num_downloads")
 
-            num_ratings_element = app_document.find(attrs={"class": "reviews-num"})
-            app.num_ratings = num_ratings_element.getText();
+            num_ratings_element = app_document.find_class("reviews-num")[0]
+            app.num_ratings = num_ratings_element.text_content()
             self.logger.debug("Got app.num_ratings")
 
-            description_element = app_document.find("meta", attrs={"name": "description"})
-            app.description = description_element['content'];
+            description_element = app_document.xpath('//meta[@name="description"]')[0]
+            app.description = description_element.get('content')
             self.logger.debug("Got app.description")
 
             return app

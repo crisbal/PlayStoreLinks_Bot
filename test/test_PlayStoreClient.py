@@ -1,7 +1,4 @@
 import unittest
-import Config
-import logging
-Config.loggingLevel = logging.ERROR
 
 import PlayStore
 
@@ -11,7 +8,6 @@ class TestLinkMe(unittest.TestCase):
         self.app = playStore.search("facebook")
         self.app2 = playStore.search("Sleep as Android Unlock")
         self.app3 = playStore.search("Plants vs. Zombies FREE")
-
         
         #self.appDB = linkMe.searchInDatabase("Facebook")
 
@@ -31,13 +27,6 @@ class TestLinkMe(unittest.TestCase):
         self.assertEqual(self.app3.free, True)
         self.assertEqual(self.app3.price, "0")
 
-
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-
-
-
+    

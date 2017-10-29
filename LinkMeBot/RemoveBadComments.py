@@ -1,25 +1,17 @@
 #reddit
 import praw
 #mine
-import Config
+from . import Config
+from .utils import make_logger
 
 #general
 import sys
 import time
 
 #building the logger
-import logging
-logger = logging.getLogger('LinkMeBot')
-logger.setLevel(Config.loggingLevel)
-fh = logging.FileHandler(Config.logFileDelete)
-fh.setLevel(Config.loggingLevel)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-logger.addHandler(fh)
-logger.addHandler(ch)
+logger = make_logger(Config.loggerName + '-Remover', 
+    logfile=Config.logFile, 
+    loggin_level=Config.loggingLevel)
 
 def stopBot():
     logger.info("Shutting down")
@@ -48,3 +40,5 @@ for comment in comments:
     if(comment.score <= -1):
         logger.warn("Removing comment {}".format(comment.id))
         comment.delete()
+
+stopBot()
