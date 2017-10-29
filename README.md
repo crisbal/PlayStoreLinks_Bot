@@ -2,52 +2,41 @@
 
 A Reddit bot that links to Android Apps from the Play Store when a user asks to do it.
 
+The bot was written on an Arch Linux machine with Python 3, so you need Python 3 to run it. It runs on a Raspberry Pi with Debian.
 
-#### What's included
+#### Where to look
 
-* LinkMeBot.py, the main program
-* App.py, a class that the bot uses to save data
-* Config.py, a simple and easy to understand configuration file
-* Test.py, a simple test to see if the Play Store parsing works.
-* requirements.txt, the pip modules you need to install to run the bot
-* LICENSE, the license that this project is released under (MIT)
-* README, this file
+* `LinkMeBot/LinkMeBot.py`, the main script
+* `LinkMeBot/RemoveBadComments.py`, the scripts that remove downvoted comments
+* `LinkMeBot/Config.example.py`, an example configuration file
+* `PlayStore/`, a module for searching the PlayStore
+* `test/`, tests
 
+#### How to run it
 
-#### What you need to know before editing this bot / running it on your local machine
-
-The bot was written on an Arch machine with Python 3
-
-See required packages in requirements.txt
-
-You need to set a valid username and password in the config file
-Also in the config file you need to set the subreddits where the bot searches for comments
-
-#### How to use it
-
-On the server I use the bot is set to run every two minutes using a cronjob
-If you want to test the code I suggest you to post a comment in a subreddit and then run the bot, after configuring it.
-
+* `git clone` the project
+* `cd PlayStoreLinks_Bot`
+* `python3 -m venv venv`
+	* this will create a virtual environment for the bot to run in
+* `source venv/bin/activate`
+	* activate the bot
+* `pip install -r requirements.txt`
+	* install requirements
+* Create a [reddit app](reddit.com/prefs/apps) as script
+* Set a valid `username`, `password`, `client_id`, `client_secret` in the `LinkMeBot/Config.py` file
+* `python -m LinkMeBot.LinkMeBot`
+	* You can run tests with `python -m unittest`
 
 #### Info / Reddit-related questions / See the bot in action
 
 http://www.reddit.com/r/cris9696
 
-Feel free to make a new post if you want to test the bot, or just use an existing one.
-
-
-#### TODO
-
-* Autodelete
-* Database
-
+Feel free to make a new post if you want to test the bot
 
 #### Want to help or want help?
 
 * If you want to help please feel free to do it.
-
 * If you need help please fell free to ask me.
-
 * If you find any bug or exploit please tell me: I will try to fix them or if you want you can fix them and I will include your changes in the project.
 * If you find a way to improve the bot, please share it with everybody.
 
