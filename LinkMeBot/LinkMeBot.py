@@ -74,7 +74,7 @@ def generate_reply(link_me_requests):
 
             if app:
                 if len(requested_apps) == 1 and len(link_me_requests) == 1: #build pretty reply
-                    reply_body += "[**{}**]({}) by {} | ".format(app.name, app.link, app.author)
+                    reply_body += "[**{}**]({}&referrer=utm_source%3Dreddit-playstorelinks__bot) by {} | ".format(app.name, app.link, app.author)
                     reply_body += (" Free " if app.free else ("Paid: {} ".format(app.price)))
                     reply_body += ("with IAP" if app.IAP else "") + "\n\n"
                     reply_body += "> {}\n\n".format(app.description)
@@ -82,7 +82,7 @@ def generate_reply(link_me_requests):
                     reply_body += "{} installs\n\n".format(human_readable_download_number(app.num_downloads))
                     reply_body += "[Search manually](https://play.google.com/store/search?q={})\n\n".format(app_name, urllib.parse.quote_plus(app_name))
                 else:
-                    reply_body += "[**{}**]({}) - ".format(app.name, app.link)
+                    reply_body += "[**{}**]({}&referrer=utm_source%3Dreddit-playstorelinks__bot) - ".format(app.name, app.link)
                     reply_body += ("Free " if app.free else ("Paid: {} ".format(app.price)))
                     reply_body += ("with IAP - " if app.IAP else " - ") 
                     reply_body += "Rating: {}/100 - ".format(app.rating)
