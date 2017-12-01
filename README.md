@@ -22,7 +22,7 @@ The bot was written on an Arch Linux machine with Python 3, so you need Python 3
 	* activate the bot
 * `pip install -r requirements.txt`
 	* install requirements
-* Create a [reddit app](reddit.com/prefs/apps) as script
+* Create a [reddit app](http://reddit.com/prefs/apps) as script
 * Set a valid `username`, `password`, `client_id`, `client_secret` in the `LinkMeBot/Config.py` file
 * `python -m LinkMeBot.LinkMeBot`
 	* You can run tests with `python -m unittest`
