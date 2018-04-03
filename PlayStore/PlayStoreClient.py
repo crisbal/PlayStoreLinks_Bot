@@ -6,7 +6,6 @@ import logging
 from PlayStore import App, AppNotFoundException
 
 from lxml.html import fromstring
-from lxml import etree
 
 class PlayStoreClient():
     def __init__(self, logger_name = None):
@@ -50,11 +49,14 @@ class PlayStoreClient():
 
     def parse_search_page(self, search_page_html):
         #we need to parse the resulting page to get the app we are looking for
+
         document = fromstring(search_page_html)
         cards = document.find_class("card") #we are looking for div with class set to 'card', these are search results
+
         if len(cards) > 0:
             #we need to get info on the first card/app we find since it's probably the correct guess
             card = cards[0]
+
             app = App()
 
             #let's do some html/css parsing
