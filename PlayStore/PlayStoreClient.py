@@ -87,28 +87,28 @@ class PlayStoreClient():
                 app.free = False
             self.logger.debug("Got app.free")
 
+            app.author = app_document.xpath("//a[contains(@href,'apps/developer')]")[0].text.strip() 
             #Hacky fix to parse additional information section at bottom of page
             app.IAP = False
-            additional_info_elements = app_document.xpath("//c-wiz/div/div/h2[text() = 'Additional Information']")[0].getparent().getparent().xpath("./div[1]/div[0]/div[not(contains(@class, ' '))]")
+            additional_info_elements = app_document.xpath("//c-wiz/div/div/h2[text() = 'Additional Information']")[0].getparent().getparent().xpath("./div[2]/div[1]/div[not(contains(@class, ' '))]")
             for item in additional_info_elements:
-                item_name = item.getchildren()[0].text
-                data = item.getchildren()[1].getchildren()[0].text
-                if item_name is "Updated":
-                    app.update_date = data
-                    self.logger.debug("Got app.update_date")
-                elif item_name is "Size":
-                    if data != "Varies with Device":
-                        app.file_size = data
-                        self.logger.debug("Got app.file_size")
-                elif item_name is "Installs":
-                    app.num_downloads = data
-                    self.logger.debug("Got app.num_downloads")
-                elif item_name is "In-app Products":
-                    app.IAP = True
-                    self.logger.debug("Got app.IAP")
-                elif item_name is "Offered By":
-                    app.author = data
-                    self.logger.debug("Got app.author")
+                item_name = item.getchildren()[0].text.strip()
+                valid_items = ["Updated", "Size", "Installs", "In-app Products"]
+                if item_name in valid_items:
+                    data = item.getchildren()[1].getchildren()[0].text.strip()
+                    if item_name == "Updated":
+                        app.update_date = data
+                        self.logger.debug("Got app.update_date")
+                    elif item_name == "Size":
+                        if data != "Varies with Device":
+                            app.file_size = data
+                            self.logger.debug("Got app.file_size")
+                    elif item_name == "Installs":
+                        app.num_downloads = data
+                        self.logger.debug("Got app.num_downloads")
+                    elif item_name == "In-app Products":
+                        app.IAP = True
+                        self.logger.debug("Got app.IAP")
 
             num_ratings_element = app_document.xpath('//meta[@itemprop="ratingCount"]')[0]
             app.num_ratings = num_ratings_element.attrib['content']
