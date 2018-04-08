@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
     subreddits = r.subreddit("+".join(Config.subreddits))
 
-    link_me_regex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
+    link_me_regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
 
     try:
         logger.debug("Getting the comments")
