@@ -41,13 +41,20 @@ def stopBot(delete_lockfile=True):
 
 def is_done(comment):
     #TODO check if in the database
+    comments = pickle.load( open( "doneComments", "rb" ) )
     comment.refresh()
-    comment.refresh()    
+    comment.refresh()
+    if comment.id in comments:
+        logger.debug('Already replied to "{}" via pickle'.format(comment.id))
+        return True    
+    else:
+        comments.append(comment.id)
+        pickle.dump(comments, open( "doneComments", "wb" ) )
+
     for reply in comment.replies:
         if reply.author.name.lower() == Config.username.lower():
             logger.debug('Already replied to "{}"'.format(comment.id))
             return True
-
     return False
 
 
