@@ -40,7 +40,7 @@ def get_text_from_markdown(markdown_text):
 # https://stackoverflow.com/a/3155023
 millnames = ['',' thousand',' million',' billion',' trillion']
 def human_readable_download_number(download_number_string):
-	download_number_string = download_number_string.split("-")[0].replace(',','').strip()
+	download_number_string = download_number_string.split("-")[0].replace(',','').replace('+','').strip()
 	n = float(download_number_string)
 	millidx = max(0,min(len(millnames)-1,
 		int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))

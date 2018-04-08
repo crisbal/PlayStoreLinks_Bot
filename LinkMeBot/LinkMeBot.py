@@ -41,15 +41,18 @@ def stopBot(delete_lockfile=True):
 
 def is_done(comment):
     #TODO check if in the database
-    comments = pickle.load( open( "doneComments", "rb" ) )
+    try:
+        done_comments = pickle.load( open( "doneComments", "rb" ) )
+    except Exception:
+        done_comments = []
+
     comment.refresh()
-    comment.refresh()
-    if comment.id in comments:
+    if comment.id in done_comments:
         logger.debug('Already replied to "{}" via pickle'.format(comment.id))
         return True    
     else:
-        comments.append(comment.id)
-        pickle.dump(comments, open( "doneComments", "wb" ) )
+        done_comments.append(comment.id)
+        pickle.dump(done_comments, open( "doneComments", "wb" ) )
 
     for reply in comment.replies:
         if reply.author.name.lower() == Config.username.lower():
@@ -84,7 +87,8 @@ def generate_reply(link_me_requests):
                     reply_body += "[**{}**]({}&referrer=utm_source%3Dreddit-playstorelinks__bot) by {} | ".format(app.name, app.link, app.author)
                     reply_body += (" Free " if app.free else ("Paid: {} ".format(app.price)))
                     reply_body += ("with IAP" if app.IAP else "") + "\n\n"
-                    reply_body += "> {}\n\n".format(app.description)
+                    description = app.description[:160] + (app.description[160:] and '...')
+                    reply_body += "> {}\n\n".format(description)
                     reply_body += "Rating: {}/100 | ".format(app.rating)
                     reply_body += "{} installs\n\n".format(human_readable_download_number(app.num_downloads))
                     reply_body += "[Search manually](https://play.google.com/store/search?q={})\n\n".format(app_name, urllib.parse.quote_plus(app_name))
@@ -172,7 +176,7 @@ if __name__ == "__main__":
 
     subreddits = r.subreddit("+".join(Config.subreddits))
 
-    link_me_regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
+    link_me_regex = re.compile("\\blink[\s]*medebug[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
 
     try:
         logger.debug("Getting the comments")
