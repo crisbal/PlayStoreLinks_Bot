@@ -87,7 +87,7 @@ class PlayStoreClient():
                 app.free = False
             self.logger.debug("Got app.free")
 
-            app.author = app_document.xpath("//a[contains(@href,'apps/developer')]")[0].text.strip() 
+            app.author = app_document.xpath("//a[contains(@href,'apps/dev')]")[0].text.strip() 
             #Hacky fix to parse additional information section at bottom of page
             app.IAP = False
             additional_info_elements = app_document.xpath("//c-wiz/div/div/h2[text() = 'Additional Information']")[0].getparent().getparent().xpath("./div[2]/div[1]/div[not(contains(@class, ' '))]")
