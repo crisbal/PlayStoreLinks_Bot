@@ -95,7 +95,7 @@ class PlayStoreClient():
                 item_name = item.getchildren()[0].text.strip()
                 valid_items = ["Updated", "Size", "Installs", "In-app Products"]
                 if item_name in valid_items:
-                    data = item.getchildren()[1].getchildren()[0].text.strip()
+                    data = item.getchildren()[1].getchildren()[0].getchildren()[0].text.strip()
                     if item_name == "Updated":
                         app.update_date = data
                         self.logger.debug("Got app.update_date")
@@ -110,9 +110,9 @@ class PlayStoreClient():
                         app.IAP = True
                         self.logger.debug("Got app.IAP")
 
-            num_ratings_element = app_document.xpath('//meta[@itemprop="ratingCount"]')[0]
-            app.num_ratings = num_ratings_element.attrib['content']
-            self.logger.debug("Got app.num_ratings")
+            #num_ratings_element = app_document.xpath('//meta[@itemprop="ratingCount"]')[0]
+            #app.num_ratings = num_ratings_element.attrib['content']
+            #self.logger.debug("Got app.num_ratings")
 
             description_element = app_document.xpath('//meta[@name="description"]')[0]
             app.description = description_element.get('content')
