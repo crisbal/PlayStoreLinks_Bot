@@ -29,7 +29,7 @@ class PlayStoreClient():
         self.logger.debug("Sending request for quoted search")
         params = {"q": '"{}"'.format(query), "c": "apps", "hl": "en", "gl": "us"};  # first try with
         page_request = requests.post(SEARCH_URL, params=params)
-        self.logger.debug(f'POST: {page_request.url}')        
+        self.logger.debug('POST: {}'.format(page_request.url))        
         self.logger.debug("Analyzing request for quoted search")
         app = self.parse_search_page(page_request.text)
 
@@ -37,7 +37,7 @@ class PlayStoreClient():
             self.logger.debug("Sending request for unquoted search")
             params = { "q": query, "c": "apps", "hl": "en", "gl": "us"};
             page_request = requests.post(SEARCH_URL, params=params)
-            self.logger.debug(f'POST: {page_request.url}')
+            self.logger.debug('POST: {}'.format(page_request.url))        
             self.logger.debug("Analyzing request for unquoted search")
             app = self.parse_search_page(page_request.text)
 
