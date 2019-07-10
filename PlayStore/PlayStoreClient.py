@@ -7,6 +7,8 @@ from PlayStore import App, AppNotFoundException
 
 from lxml.html import fromstring
 
+SEARCH_URL = "https://play.google.com/store/search"
+
 class PlayStoreClient():
     def __init__(self, logger_name = None):
         if logger_name:
@@ -25,17 +27,17 @@ class PlayStoreClient():
         self.logger.info("Searching for '{}'".format(query))
 
         self.logger.debug("Sending request for quoted search")
-        params = {"q": '"{}"'.format(query), "c": "apps", "hl": "en"};  # first try with
-        page_request = requests.get("http://play.google.com/store/search", params=params)
-
+        params = {"q": '"{}"'.format(query), "c": "apps", "hl": "en", "gl": "us"};  # first try with
+        page_request = requests.post(SEARCH_URL, params=params)
+        self.logger.debug(f'POST: {page_request.url}')        
         self.logger.debug("Analyzing request for quoted search")
         app = self.parse_search_page(page_request.text)
 
         if app is None:
             self.logger.debug("Sending request for unquoted search")
-            params = { "q": query, "c": "apps", "hl": "en"};
-            page_request = requests.get("http://play.google.com/store/search", params=params)
-
+            params = { "q": query, "c": "apps", "hl": "en", "gl": "us"};
+            page_request = requests.post(SEARCH_URL, params=params)
+            self.logger.debug(f'POST: {page_request.url}')
             self.logger.debug("Analyzing request for unquoted search")
             app = self.parse_search_page(page_request.text)
 
