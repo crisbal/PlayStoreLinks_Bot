@@ -3,7 +3,7 @@ cffi==1.11.2
 chardet==3.0.4
 decorator==4.1.2
 idna==2.6
-lxml==4.3.4
+lxml==4.6.3
 misaka==2.1.0
 praw==5.2.0
 prawcore==0.12.0
