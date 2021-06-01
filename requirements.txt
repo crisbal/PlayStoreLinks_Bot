@@ -11,4 +11,4 @@ pycparser==2.18
 requests==2.18.4
 six==1.11.0
 update-checker==0.16
-urllib3==1.22
+urllib3==1.26.5
